@@ -1,0 +1,6 @@
+{
+  "name": "EduThai AI - แพลตฟอร์มการเรียนรู้ ม.1-ม.3",
+  "description": "MVP แพลตฟอร์มการศึกษาไทยเพื่อลดความเหลื่อมล้ำด้วย AI Personalization และ Gamification สำหรับนักเรียนระดับชั้น ม.1 - ม.3",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
