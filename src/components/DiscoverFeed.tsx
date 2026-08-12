@@ -9,6 +9,7 @@ interface DiscoverFeedProps {
   onSelectCourse: (course: Course) => void;
   onEnrollCourse: (courseId: string) => void;
   onStartOnboarding: () => void;
+  onAddCourseToCart?: (course: Course) => void;
 }
 
 export const DiscoverFeed: React.FC<DiscoverFeedProps> = ({
@@ -16,7 +17,8 @@ export const DiscoverFeed: React.FC<DiscoverFeedProps> = ({
   user,
   onSelectCourse,
   onEnrollCourse,
-  onStartOnboarding
+  onStartOnboarding,
+  onAddCourseToCart
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string>('ทั้งหมด');
@@ -150,6 +152,7 @@ export const DiscoverFeed: React.FC<DiscoverFeedProps> = ({
                 course={course}
                 onSelectCourse={onSelectCourse}
                 onEnrollCourse={onEnrollCourse}
+                onAddToCart={onAddCourseToCart}
               />
             ))}
           </div>
@@ -192,6 +195,7 @@ export const DiscoverFeed: React.FC<DiscoverFeedProps> = ({
                 course={course}
                 onSelectCourse={onSelectCourse}
                 onEnrollCourse={onEnrollCourse}
+                onAddToCart={onAddCourseToCart}
               />
             ))}
           </div>

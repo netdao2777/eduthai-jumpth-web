@@ -81,43 +81,45 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({ user }) => {
             </p>
           </div>
         </div>
+      </section>
 
-        {/* Sub Navigation */}
-        <div className="pt-4 border-t border-white/10 flex items-center gap-2 overflow-x-auto no-scrollbar mt-6">
+      {/* Sub-Header Navigation Bar (Yellow-Lime Horizontal Bar) */}
+      <div className="sticky top-16 z-20 bg-[#EEF8A0] border border-[#D5E871] shadow-xs p-1.5 rounded-xl backdrop-blur-md">
+        <div className="grid grid-cols-3 gap-1 sm:gap-3">
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-2 transition-all ${
+            className={`w-full py-1.5 px-1 sm:px-4 rounded-lg font-extrabold text-[11px] sm:text-sm transition-all duration-150 cursor-pointer text-center truncate active:scale-95 ${
               activeTab === 'dashboard'
-                ? 'bg-[#C2E114] text-[#1A1C1C]'
-                : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                ? 'bg-[#2D3436] text-[#C2E114] shadow-2xs font-black'
+                : 'text-[#2D3436] hover:bg-white/60 hover:text-black font-bold'
             }`}
           >
-            📊 ภาพรวมระบบ (Admin Dashboard)
+            ภาพรวมระบบ
           </button>
 
           <button
             onClick={() => setActiveTab('approval')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-2 transition-all ${
+            className={`w-full py-1.5 px-1 sm:px-4 rounded-lg font-extrabold text-[11px] sm:text-sm transition-all duration-150 cursor-pointer text-center truncate active:scale-95 ${
               activeTab === 'approval'
-                ? 'bg-[#C2E114] text-[#1A1C1C]'
-                : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                ? 'bg-[#2D3436] text-[#C2E114] shadow-2xs font-black'
+                : 'text-[#2D3436] hover:bg-white/60 hover:text-black font-bold'
             }`}
           >
-            📋 อนุมัติสื่อการสอน ({pendingCount} รออนุมัติ)
+            อนุมัติสื่อ ({pendingCount})
           </button>
 
           <button
             onClick={() => setActiveTab('support')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-2 transition-all ${
+            className={`w-full py-1.5 px-1 sm:px-4 rounded-lg font-extrabold text-[11px] sm:text-sm transition-all duration-150 cursor-pointer text-center truncate active:scale-95 ${
               activeTab === 'support'
-                ? 'bg-[#C2E114] text-[#1A1C1C]'
-                : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                ? 'bg-[#2D3436] text-[#C2E114] shadow-2xs font-black'
+                : 'text-[#2D3436] hover:bg-white/60 hover:text-black font-bold'
             }`}
           >
-            ✉️ กล่องข้อความผู้ใช้ & Report ({tickets.filter(t => t.status === 'open').length} ใหม่)
+            กล่องข้อความ ({tickets.filter(t => t.status === 'open').length})
           </button>
         </div>
-      </section>
+      </div>
 
       {/* Tab 1: Admin Dashboard */}
       {activeTab === 'dashboard' && (

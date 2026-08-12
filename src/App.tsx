@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { UserProfile, Course, Comment, LeaderboardUser, Badge, DailyQuest, UserRole } from './types';
+import { UserProfile, Course, Comment, LeaderboardUser, Badge, DailyQuest, UserRole, DecorItem, CartItem } from './types';
 import { INITIAL_COURSES, INITIAL_COMMENTS, LEADERBOARD_USERS, BADGES_LIST, DAILY_QUESTS } from './mockData';
+import { DECOR_AVATARS, DECOR_FRAMES, DECOR_EFFECTS } from './data/decorShopData';
 import { Navbar } from './components/Navbar';
 import { UserStatsBar } from './components/UserStatsBar';
 import { HeroLanding } from './components/HeroLanding';
@@ -12,9 +13,13 @@ import { QuizGameArena } from './components/QuizGameArena';
 import { CreatorStudioView } from './components/CreatorStudioView';
 import { AdminPortalView } from './components/AdminPortalView';
 import { AboutView } from './components/AboutView';
+import { CoinShopView } from './components/CoinShopView';
+import { DecorShopView } from './components/DecorShopView';
+import { ProfileView } from './components/ProfileView';
 import { LoginModal } from './components/LoginModal';
 import { OnboardingModal } from './components/OnboardingModal';
 import { DailyQuestsModal } from './components/DailyQuestsModal';
+import { CartDrawerModal } from './components/CartDrawerModal';
 import { AiTutorFab } from './components/AiTutorFab';
 import { Sparkles } from 'lucide-react';
 
@@ -24,6 +29,10 @@ export default function App() {
   // User Profile State
   const [user, setUser] = useState<UserProfile>({
     isLoggedIn: true,
+    username: 'krupape_official',
+    description: 'ครูผู้หลงใหลในเทคโนโลยี และการพัฒนาสื่อการเรียนรู้ EdTech สู่เด็กไทย',
+    gender: 'ชาย',
+    dateOfBirth: '15/08/1998',
     phone: '081-234-5678',
     email: 'creator.pae@eduthai.org',
     name: 'ครูพี่เป้ (Creator)',
@@ -38,6 +47,17 @@ export default function App() {
     coins: 18500,
     streakDays: 14,
     avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=TeacherPae',
+    equippedFrameId: 'frame-neon-glow',
+    equippedEffectId: 'effect-none',
+    ownedAvatars: ['avatar-default-1', 'avatar-default-2', 'avatar-cyber-hero'],
+    ownedFrameIds: ['frame-none', 'frame-neon-glow'],
+    ownedEffectIds: ['effect-none', 'effect-fire-aura'],
+    subscriptionPass: {
+      isActive: true,
+      planName: 'EduPass VIP (รายเดือน)',
+      expiresAt: '30 ก.ย. 2026',
+      isMonthly: true
+    },
     isOnboarded: true
   });
 
@@ -51,11 +71,13 @@ export default function App() {
   // Active View State
   const [selectedCourse, setSelectedCourse] = useState<Course>(INITIAL_COURSES[0]);
 
-  // Modals State
+  // Modals & Cart State
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [onboardingModalOpen, setOnboardingModalOpen] = useState(false);
   const [questsModalOpen, setQuestsModalOpen] = useState(false);
   const [aiTutorFabOpen, setAiTutorFabOpen] = useState(false);
+  const [cartModalOpen, setCartModalOpen] = useState(false);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   // Celebration Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -63,6 +85,136 @@ export default function App() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Cart Handler Functions
+  const handleAddToCart = (item: {
+    itemId: string;
+    type: 'course' | 'decor' | 'coinPackage';
+    title: string;
+    categoryName: string;
+    price: number;
+    currency: 'COINS' | 'THB';
+    thumbnail?: string;
+    originalItem?: any;
+  }) => {
+    // Check duplicate in cart
+    const exists = cartItems.some(ci => ci.itemId === item.itemId);
+    if (exists) {
+      showToast(`🛒 "${item.title}" มีอยู่ในตะกร้าสินค้าแล้ว`);
+      return;
+    }
+
+    // Check if course is already enrolled
+    if (item.type === 'course') {
+      const course = courses.find(c => c.id === item.itemId);
+      if (course?.isEnrolled) {
+        showToast(`คุณได้ลงเรียนคอร์ส "${item.title}" เรียบร้อยแล้ว`);
+        return;
+      }
+    }
+
+    const newCartItem: CartItem = {
+      cartItemId: `cart-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      itemId: item.itemId,
+      type: item.type,
+      title: item.title,
+      categoryName: item.categoryName,
+      price: item.price,
+      currency: item.currency,
+      thumbnail: item.thumbnail,
+      originalItem: item.originalItem
+    };
+
+    setCartItems(prev => [...prev, newCartItem]);
+    showToast(`🛒 เพิ่ม "${item.title}" ลงตะกร้าเรียบร้อยแล้ว`);
+  };
+
+  const handleAddCourseToCart = (course: Course) => {
+    handleAddToCart({
+      itemId: course.id,
+      type: 'course',
+      title: course.title,
+      categoryName: 'คอร์สเรียน',
+      price: 0, // Free course or coin price
+      currency: 'COINS',
+      thumbnail: course.thumbnail,
+      originalItem: course
+    });
+  };
+
+  const handleRemoveFromCart = (cartItemId: string) => {
+    setCartItems(prev => prev.filter(item => item.cartItemId !== cartItemId));
+    showToast('ลบรายการออกจากตะกร้าแล้ว');
+  };
+
+  const handleClearCart = () => {
+    setCartItems([]);
+    showToast('ล้างรายการในตะกร้าทั้งหมดเรียบร้อยแล้ว');
+  };
+
+  const handleCheckoutCart = () => {
+    if (cartItems.length === 0) return;
+
+    const totalCoins = cartItems
+      .filter(item => item.currency === 'COINS')
+      .reduce((sum, item) => sum + item.price, 0);
+
+    if (user.coins < totalCoins) {
+      showToast(`⚠️ เหรียญไม่พอสำหรับการสั่งซื้อ (ขาดอีก ${(totalCoins - user.coins).toLocaleString()} เหรียญ)`);
+      return;
+    }
+
+    // Deduct coins if any
+    if (totalCoins > 0) {
+      setUser(prev => ({
+        ...prev,
+        coins: prev.coins - totalCoins
+      }));
+    }
+
+    // Process all cart items
+    cartItems.forEach(cartItem => {
+      if (cartItem.type === 'course') {
+        setCourses(prevCourses =>
+          prevCourses.map(c => c.id === cartItem.itemId ? { ...c, isEnrolled: true } : c)
+        );
+      } else if (cartItem.type === 'decor' && cartItem.originalItem) {
+        const decorItem = cartItem.originalItem;
+        setUser(prev => {
+          if (decorItem.type === 'avatar') {
+            const owned = prev.ownedAvatars || [];
+            return {
+              ...prev,
+              avatar: decorItem.avatarUrl || prev.avatar,
+              ownedAvatars: Array.from(new Set([...owned, decorItem.id]))
+            };
+          }
+          if (decorItem.type === 'frame') {
+            const owned = prev.ownedFrameIds || [];
+            return {
+              ...prev,
+              equippedFrameId: decorItem.id,
+              ownedFrameIds: Array.from(new Set([...owned, decorItem.id]))
+            };
+          }
+          if (decorItem.type === 'effect') {
+            const owned = prev.ownedEffectIds || [];
+            return {
+              ...prev,
+              equippedEffectId: decorItem.id,
+              ownedEffectIds: Array.from(new Set([...owned, decorItem.id]))
+            };
+          }
+          return prev;
+        });
+      }
+    });
+
+    const itemsCount = cartItems.length;
+    setCartItems([]);
+    setCartModalOpen(false);
+    showToast(`🎉 สั่งซื้อคอร์สเรียนและของตกแต่ง ${itemsCount} รายการเรียบร้อยแล้ว!`);
   };
 
   // Login handler
@@ -203,6 +355,93 @@ export default function App() {
     showToast(`ส่งคำขอถอนเงิน ${coins.toLocaleString()} เหรียญเรียบร้อยแล้ว!`);
   };
 
+  // Update Coins from CoinShop
+  const handleUpdateUserCoins = (amount: number, reason: string) => {
+    setUser(prev => ({
+      ...prev,
+      coins: prev.coins + amount
+    }));
+    showToast(`🎉 ${reason} (+${amount.toLocaleString()} เหรียญ)`);
+  };
+
+  // Subscribe Pass
+  const handleSubscribePass = (planName: string, days: number) => {
+    setUser(prev => ({
+      ...prev,
+      subscriptionPass: {
+        isActive: true,
+        planName,
+        expiresAt: '30 วันนับจากวันนี้',
+        isMonthly: days <= 31
+      }
+    }));
+    showToast(`👑 เปิดใช้งาน ${planName} เรียบร้อยแล้ว! เรียนบุฟเฟต์ฟรีทุกคอร์สที่ร่วมรายการ`);
+  };
+
+  // Buy Decor Item
+  const handleBuyDecorItem = (item: DecorItem) => {
+    if (user.coins < item.price) {
+      showToast('⚠️ เหรียญสะสมไม่เพียงพอ กรุณาเติมเหรียญเพิ่ม');
+      return;
+    }
+
+    setUser(prev => {
+      const updatedCoins = prev.coins - item.price;
+      if (item.type === 'avatar') {
+        const owned = prev.ownedAvatars || [];
+        return {
+          ...prev,
+          coins: updatedCoins,
+          avatar: item.avatarUrl || prev.avatar,
+          ownedAvatars: Array.from(new Set([...owned, item.id]))
+        };
+      }
+      if (item.type === 'frame') {
+        const owned = prev.ownedFrameIds || [];
+        return {
+          ...prev,
+          coins: updatedCoins,
+          equippedFrameId: item.id,
+          ownedFrameIds: Array.from(new Set([...owned, item.id]))
+        };
+      }
+      if (item.type === 'effect') {
+        const owned = prev.ownedEffectIds || [];
+        return {
+          ...prev,
+          coins: updatedCoins,
+          equippedEffectId: item.id,
+          ownedEffectIds: Array.from(new Set([...owned, item.id]))
+        };
+      }
+      return prev;
+    });
+
+    showToast(`🎉 ซื้อไอเทม "${item.name}" สำเร็จ! สวมใส่บนโปรไฟล์เรียบร้อยแล้ว`);
+  };
+
+  // Equip Decor Item
+  const handleEquipDecorItem = (item: DecorItem) => {
+    setUser(prev => {
+      if (item.type === 'avatar' && item.avatarUrl) {
+        return { ...prev, avatar: item.avatarUrl };
+      }
+      if (item.type === 'frame') {
+        return { ...prev, equippedFrameId: item.id };
+      }
+      if (item.type === 'effect') {
+        return { ...prev, equippedEffectId: item.id };
+      }
+      return prev;
+    });
+    showToast(`สวมใส่ "${item.name}" บนโปรไฟล์แล้ว`);
+  };
+
+  // Update Profile
+  const handleUpdateProfile = (updatedFields: Partial<UserProfile>) => {
+    setUser(prev => ({ ...prev, ...updatedFields }));
+  };
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-[#1A1C1C] flex flex-col selection:bg-[#C2E114] selection:text-[#1A1C1C]">
       
@@ -221,6 +460,8 @@ export default function App() {
         user={user}
         onOpenLogin={() => setLoginModalOpen(true)}
         onLogout={handleLogout}
+        cartCount={cartItems.length}
+        onOpenCart={() => setCartModalOpen(true)}
       />
 
       {/* Gamification Stats Bar (Always visible if logged in) */}
@@ -230,6 +471,7 @@ export default function App() {
           quests={quests}
           onOpenQuests={() => setQuestsModalOpen(true)}
           onOpenAiTutor={() => setAiTutorFabOpen(true)}
+          onOpenProfile={() => setCurrentTab('profile')}
         />
       )}
 
@@ -264,6 +506,7 @@ export default function App() {
             }}
             onEnrollCourse={handleEnrollCourse}
             onStartOnboarding={() => setOnboardingModalOpen(true)}
+            onAddCourseToCart={handleAddCourseToCart}
           />
         )}
 
@@ -303,6 +546,38 @@ export default function App() {
         {/* Tab 5: Games Arena */}
         {currentTab === 'games' && (
           <QuizGameArena onAwardCoinsAndExp={handleGameAward} />
+        )}
+
+        {/* Tab: Coin Shop & Subscription */}
+        {currentTab === 'coinshop' && (
+          <CoinShopView
+            user={user}
+            onUpdateUserCoins={handleUpdateUserCoins}
+            onSubscribePass={handleSubscribePass}
+            onOpenDecorShop={() => setCurrentTab('shop')}
+          />
+        )}
+
+        {/* Tab: Decor Shop */}
+        {currentTab === 'shop' && (
+          <DecorShopView
+            user={user}
+            onBuyItem={handleBuyDecorItem}
+            onEquipItem={handleEquipDecorItem}
+            onNavigateTopUp={() => setCurrentTab('coinshop')}
+            onAddToCart={handleAddToCart}
+          />
+        )}
+
+        {/* Tab: Profile & Edit Profile */}
+        {currentTab === 'profile' && (
+          <ProfileView
+            user={user}
+            badges={badges}
+            onUpdateProfile={handleUpdateProfile}
+            onNavigateShop={() => setCurrentTab('shop')}
+            onNavigateTopUp={() => setCurrentTab('coinshop')}
+          />
         )}
 
         {/* Tab 6: Creator Studio */}
@@ -371,6 +646,18 @@ export default function App() {
         quests={quests}
         onClaimReward={handleClaimQuestReward}
         onNavigateQuest={(target) => setCurrentTab(target)}
+      />
+
+      {/* Shopping Cart Drawer Modal */}
+      <CartDrawerModal
+        isOpen={cartModalOpen}
+        onClose={() => setCartModalOpen(false)}
+        cartItems={cartItems}
+        user={user}
+        onRemoveFromCart={handleRemoveFromCart}
+        onClearCart={handleClearCart}
+        onCheckoutCart={handleCheckoutCart}
+        onNavigateToShop={() => setCurrentTab('shop')}
       />
 
     </div>

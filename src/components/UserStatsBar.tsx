@@ -7,13 +7,15 @@ interface UserStatsBarProps {
   quests: DailyQuest[];
   onOpenQuests: () => void;
   onOpenAiTutor: () => void;
+  onOpenProfile?: () => void;
 }
 
 export const UserStatsBar: React.FC<UserStatsBarProps> = ({
   user,
   quests,
   onOpenQuests,
-  onOpenAiTutor
+  onOpenAiTutor,
+  onOpenProfile
 }) => {
   const levelExpTotal = user.level * 300;
   const currentLevelExp = user.exp % 300;
@@ -25,13 +27,17 @@ export const UserStatsBar: React.FC<UserStatsBarProps> = ({
     <div className="bg-white border-b border-[#E0E0E0] py-2.5 px-4 sm:px-8">
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
         
-        {/* User Info & Level */}
-        <div className="flex items-center gap-3">
+        {/* User Info & Level - Clickable to Profile */}
+        <div 
+          onClick={onOpenProfile}
+          className="flex items-center gap-3 cursor-pointer group hover:opacity-80 transition-opacity"
+          title="คลิกเพื่อเปิดหน้าโปรไฟล์ & แก้ไขข้อมูล"
+        >
           <div className="relative">
             <img
               src={user.avatar}
               alt={user.name}
-              className="w-10 h-10 rounded-full bg-[#2D3436] border-2 border-[#C2E114] object-cover"
+              className="w-10 h-10 rounded-full bg-[#2D3436] border-2 border-[#C2E114] object-cover group-hover:scale-105 transition-transform"
             />
             <span className="absolute -bottom-1 -right-1 bg-[#2D3436] text-[#C2E114] text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-white">
               Lv.{user.level}
@@ -40,7 +46,7 @@ export const UserStatsBar: React.FC<UserStatsBarProps> = ({
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-[#2D3436] text-xs sm:text-sm">{user.name}</span>
+              <span className="font-bold text-[#2D3436] text-xs sm:text-sm group-hover:text-[#8A9914] transition-colors">{user.name}</span>
               <span className="bg-[#F1F2F6] text-[#636E72] text-[11px] px-2 py-0.5 rounded-full font-semibold">
                 {user.grade}
               </span>

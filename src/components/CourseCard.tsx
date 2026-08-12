@@ -1,17 +1,19 @@
 import React from 'react';
 import { Course } from '../types';
-import { Star, Clock, BookOpen, Award, CheckCircle2, Play } from 'lucide-react';
+import { Star, Clock, BookOpen, Award, CheckCircle2, Play, ShoppingCart } from 'lucide-react';
 
 interface CourseCardProps {
   course: Course;
   onSelectCourse: (course: Course) => void;
   onEnrollCourse: (courseId: string) => void;
+  onAddToCart?: (course: Course) => void;
 }
 
 export const CourseCard: React.FC<CourseCardProps> = ({
   course,
   onSelectCourse,
-  onEnrollCourse
+  onEnrollCourse,
+  onAddToCart
 }) => {
   return (
     <div className="bg-white rounded-[16px] border border-[#E0E0E0] overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col group">
@@ -99,12 +101,23 @@ export const CourseCard: React.FC<CourseCardProps> = ({
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => onEnrollCourse(course.id)}
-              className="w-full bg-[#C2E114] hover:bg-[#8A9914] text-[#2D3436] hover:text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-all transform active:scale-98"
-            >
-              ลงเรียนฟรี (+{course.expReward} EXP)
-            </button>
+            <div className="flex items-center gap-2">
+              {onAddToCart && (
+                <button
+                  onClick={() => onAddToCart(course)}
+                  className="p-2.5 bg-gray-100 hover:bg-gray-200 text-[#2D3436] rounded-xl font-bold transition-all cursor-pointer"
+                  title="เพิ่มคอร์สนี้ลงตะกร้า"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={() => onEnrollCourse(course.id)}
+                className="flex-1 bg-[#C2E114] hover:bg-[#8A9914] text-[#2D3436] hover:text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-all transform active:scale-98 cursor-pointer"
+              >
+                ลงเรียนฟรี (+{course.expReward} EXP)
+              </button>
+            </div>
           )}
         </div>
 

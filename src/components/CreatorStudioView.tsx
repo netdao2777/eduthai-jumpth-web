@@ -183,70 +183,72 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
 
           <button
             onClick={() => setActiveTab('upload')}
-            className="bg-[#C2E114] hover:bg-[#8A9914] text-[#2D3436] hover:text-white font-extrabold px-5 py-3 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all shrink-0"
+            className="bg-[#C2E114] hover:bg-[#8A9914] text-[#2D3436] hover:text-white font-extrabold px-5 py-3 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all shrink-0 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" /> สร้างและส่งสื่อใหม่
           </button>
         </div>
+      </section>
 
-        {/* Studio Sub-Navigation Tabs */}
-        <div className="pt-4 border-t border-white/10 flex items-center gap-2 overflow-x-auto no-scrollbar mt-6">
+      {/* Easy-to-Click Sub-Header Navigation Bar (Thin Horizontal Strip) */}
+      <div className="sticky top-16 z-20 bg-[#EEF8A0] border border-[#D5E871] shadow-xs p-1.5 rounded-xl backdrop-blur-md">
+        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-2 transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-extrabold text-[11px] sm:text-sm whitespace-nowrap shrink-0 transition-all duration-150 cursor-pointer active:scale-95 ${
               activeTab === 'dashboard'
-                ? 'bg-[#C2E114] text-[#2D3436]'
-                : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                ? 'bg-[#2D3436] text-[#C2E114] shadow-2xs font-black'
+                : 'text-[#2D3436] hover:bg-white/60 hover:text-black font-bold'
             }`}
           >
-            <BarChart3 className="w-4 h-4" /> ภาพรวม & Analytics
+            ภาพรวมระบบ
           </button>
 
           <button
             onClick={() => setActiveTab('upload')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-2 transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-extrabold text-[11px] sm:text-sm whitespace-nowrap shrink-0 transition-all duration-150 cursor-pointer active:scale-95 ${
               activeTab === 'upload'
-                ? 'bg-[#C2E114] text-[#2D3436]'
-                : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                ? 'bg-[#2D3436] text-[#C2E114] shadow-2xs font-black'
+                : 'text-[#2D3436] hover:bg-white/60 hover:text-black font-bold'
             }`}
           >
-            <PlusCircle className="w-4 h-4" /> อัปโหลดสื่อ/สร้างเกม
+            อัปโหลดสื่อ/สร้างเกม
           </button>
 
           <button
             onClick={() => setActiveTab('status')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-2 transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-extrabold text-[11px] sm:text-sm whitespace-nowrap shrink-0 transition-all duration-150 cursor-pointer active:scale-95 ${
               activeTab === 'status'
-                ? 'bg-[#C2E114] text-[#2D3436]'
-                : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                ? 'bg-[#2D3436] text-[#C2E114] shadow-2xs font-black'
+                : 'text-[#2D3436] hover:bg-white/60 hover:text-black font-bold'
             }`}
           >
-            <Clock className="w-4 h-4" /> ติดตามสถานะสื่อ ({contents.filter(c => c.status === 'pending').length} รอตรวจ)
+            ติดตามสถานะ ({contents.filter(c => c.status === 'pending').length})
           </button>
 
           <button
             onClick={() => setActiveTab('withdrawal')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-2 transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-extrabold text-[11px] sm:text-sm whitespace-nowrap shrink-0 transition-all duration-150 cursor-pointer active:scale-95 ${
               activeTab === 'withdrawal'
-                ? 'bg-[#C2E114] text-[#2D3436]'
-                : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                ? 'bg-[#2D3436] text-[#C2E114] shadow-2xs font-black'
+                : 'text-[#2D3436] hover:bg-white/60 hover:text-black font-bold'
             }`}
           >
-            <Wallet className="w-4 h-4" /> ถอนเงินสะสม ({totalThbValue.toLocaleString()} บาท)
+            ถอนเงินสะสม ({totalThbValue.toLocaleString()} บาท)
           </button>
 
           <button
             onClick={() => setActiveTab('contact')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-2 transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-extrabold text-[11px] sm:text-sm whitespace-nowrap shrink-0 transition-all duration-150 cursor-pointer active:scale-95 ${
               activeTab === 'contact'
-                ? 'bg-[#C2E114] text-[#2D3436]'
-                : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                ? 'bg-[#2D3436] text-[#C2E114] shadow-2xs font-black'
+                : 'text-[#2D3436] hover:bg-white/60 hover:text-black font-bold'
             }`}
           >
-            <HelpCircle className="w-4 h-4" /> ติดต่อผู้ดูแลแอดมิน
+            ติดต่อแอดมิน
           </button>
         </div>
-      </section>
+      </div>
 
       {/* Tab 1: Dashboard & Analytics */}
       {activeTab === 'dashboard' && (
@@ -310,40 +312,105 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
           {/* Deep Analytics Visual Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* Weekly Views Graph */}
+            {/* Weekly Views Graph - Line Chart */}
             <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-[#E0E0E0] shadow-2xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-[#2D3436] text-sm">สถิติการรับชมสื่อรายวัน (Analytics)</h3>
                   <p className="text-xs text-[#636E72]">จำนวนครั้งที่นักเรียนเข้าชมสื่อของคุณใน 7 วันที่ผ่านมา</p>
                 </div>
-                <span className="text-xs font-bold bg-[#F1F2F6] px-3 py-1 rounded-full text-[#2D3436]">
+                <span className="text-[10px] font-bold bg-[#F1F2F6] px-2.5 py-0.5 rounded-full text-[#2D3436]">
                   สัปดาห์นี้
                 </span>
               </div>
 
-              {/* Visual CSS Bar Chart */}
-              <div className="h-44 flex items-end justify-between gap-2 pt-6 pb-2 border-b border-[#F1F2F6]">
-                {[
-                  { day: 'จ.', views: 1200, height: '40%' },
-                  { day: 'อ.', views: 2100, height: '65%' },
-                  { day: 'พ.', views: 1800, height: '55%' },
-                  { day: 'พฤ.', views: 2900, height: '85%' },
-                  { day: 'ศ.', views: 3400, height: '100%' },
-                  { day: 'ส.', views: 2600, height: '75%' },
-                  { day: 'อา.', views: 3100, height: '90%' },
-                ].map((bar, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-                    <span className="text-[10px] font-bold text-[#636E72] opacity-0 group-hover:opacity-100 transition-opacity">
-                      {bar.views}
-                    </span>
-                    <div
-                      className="w-full bg-[#C2E114] hover:bg-[#8A9914] rounded-t-lg transition-all duration-300"
-                      style={{ height: bar.height }}
-                    />
-                    <span className="text-xs font-bold text-[#2D3436]">{bar.day}</span>
+              {/* Line Chart with Points */}
+              <div className="space-y-2 pt-2">
+                <div className="flex justify-between items-center text-[11px] font-semibold text-[#636E72] px-1">
+                  <span>y = จำนวนครั้งที่มีการเข้าเรียน (ครั้ง)</span>
+                  <span>x = วัน</span>
+                </div>
+
+                <div className="relative w-full h-52 bg-[#FAFAFA] rounded-xl p-3 border border-[#F1F2F6] flex flex-col justify-between">
+                  {/* Grid Lines */}
+                  <div className="absolute inset-x-3 top-6 border-b border-gray-200 border-dashed flex justify-between text-[9px] text-gray-400">
+                    <span>3,000</span>
                   </div>
-                ))}
+                  <div className="absolute inset-x-3 top-20 border-b border-gray-200 border-dashed flex justify-between text-[9px] text-gray-400">
+                    <span>2,000</span>
+                  </div>
+                  <div className="absolute inset-x-3 top-34 border-b border-gray-200 border-dashed flex justify-between text-[9px] text-gray-400">
+                    <span>1,000</span>
+                  </div>
+
+                  {/* SVG Line and Points */}
+                  <div className="relative w-full h-40">
+                    <svg className="w-full h-full overflow-visible" viewBox="0 0 700 160" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#C2E114" stopOpacity="0.45" />
+                          <stop offset="100%" stopColor="#C2E114" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Gradient Fill under Line */}
+                      <path
+                        d="M 50,118 L 150,86.5 L 250,97 L 350,58.5 L 450,41 L 550,69 L 650,51.5 L 650,155 L 50,155 Z"
+                        fill="url(#chartGradient)"
+                      />
+
+                      {/* Connecting Line */}
+                      <path
+                        d="M 50,118 L 150,86.5 L 250,97 L 350,58.5 L 450,41 L 550,69 L 650,51.5"
+                        fill="none"
+                        stroke="#8A9914"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+
+                      {/* Data Points */}
+                      {[
+                        { x: 50, y: 118, views: '1,200', day: 'จ.' },
+                        { x: 150, y: 86.5, views: '2,100', day: 'อ.' },
+                        { x: 250, y: 97, views: '1,800', day: 'พ.' },
+                        { x: 350, y: 58.5, views: '2,900', day: 'พฤ.' },
+                        { x: 450, y: 41, views: '3,400', day: 'ศ.' },
+                        { x: 550, y: 69, views: '2,600', day: 'ส.' },
+                        { x: 650, y: 51.5, views: '3,100', day: 'อา.' },
+                      ].map((pt, idx) => (
+                        <g key={idx} className="group cursor-pointer">
+                          {/* Circle Dot */}
+                          <circle
+                            cx={pt.x}
+                            cy={pt.y}
+                            r="6"
+                            fill="#C2E114"
+                            stroke="#2D3436"
+                            strokeWidth="2.5"
+                            className="transition-transform group-hover:scale-150"
+                          />
+                          {/* Value Text Above Point */}
+                          <text
+                            x={pt.x}
+                            y={pt.y - 12}
+                            textAnchor="middle"
+                            className="fill-[#2D3436] text-[11px] font-extrabold"
+                          >
+                            {pt.views}
+                          </text>
+                        </g>
+                      ))}
+                    </svg>
+                  </div>
+
+                  {/* X-Axis Labels */}
+                  <div className="flex justify-between px-2 text-xs font-bold text-[#2D3436] border-t border-[#E0E0E0] pt-1">
+                    {['จ. (จันทร์)', 'อ. (อังคาร)', 'พ. (พุธ)', 'พฤ. (พฤหัส)', 'ศ. (ศุกร์)', 'ส. (เสาร์)', 'อา. (อาทิตย์)'].map((day, idx) => (
+                      <span key={idx} className="text-center min-w-[30px]">{day.split(' ')[0]}</span>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div className="flex items-center justify-between text-xs text-[#636E72]">

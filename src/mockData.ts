@@ -316,7 +316,7 @@ export const BADGES_LIST: Badge[] = [
     id: 'b1',
     title: 'เซียนคณิต ม.2',
     description: 'ผ่านคอร์สคณิตศาสตร์ ม.2 และทำคะแนนควิซได้มากกว่า 90%',
-    icon: 'fa-calculator',
+    icon: '🧮',
     isUnlocked: true,
     unlockedDate: '10 ส.ค. 2569',
     category: 'วิชาการ'
@@ -325,7 +325,7 @@ export const BADGES_LIST: Badge[] = [
     id: 'b2',
     title: 'สตรีค 7 วันติดกัน 🔥',
     description: 'เข้าใช้งานและทำภารกิจการเรียนติดต่อกันครบ 7 วัน',
-    icon: 'fa-fire',
+    icon: '🔥',
     isUnlocked: true,
     unlockedDate: '11 ส.ค. 2569',
     category: 'ความขยัน'
@@ -334,7 +334,7 @@ export const BADGES_LIST: Badge[] = [
     id: 'b3',
     title: 'นักล่าเกียรตินิยม AI 🤖',
     description: 'ปรึกษาและถามคำถามกับ AI ครูผู้ช่วยครบ 10 ครั้ง',
-    icon: 'fa-[#C2E114]',
+    icon: '🤖',
     isUnlocked: true,
     unlockedDate: '12 ส.ค. 2569',
     category: 'ปัญญาประดิษฐ์'
@@ -343,7 +343,7 @@ export const BADGES_LIST: Badge[] = [
     id: 'b4',
     title: 'นักคิดสายโค้ด 💻',
     description: 'เรียนจบหลักสูตรวิทยาการคำนวณและส่งแบบฝึกหัด Python',
-    icon: 'fa-code',
+    icon: '💻',
     isUnlocked: false,
     category: 'โค้ดดิ้ง'
   },
@@ -351,7 +351,7 @@ export const BADGES_LIST: Badge[] = [
     id: 'b5',
     title: 'ยอดนักวิจัยวิทยาศาสตร์ 🔬',
     description: 'พิชิตบทเรียนวิทยาศาสตร์ครบ 3 คอร์ส',
-    icon: 'fa-flask',
+    icon: '🔬',
     isUnlocked: false,
     category: 'วิชาการ'
   }

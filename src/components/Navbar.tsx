@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserProfile } from '../types';
-import { BookOpen, Trophy, Gamepad2, Video, Sparkles, User, LogOut, Menu, X, Flame, Shield, ChevronDown, PlusCircle, ShieldAlert, Info } from 'lucide-react';
+import { BookOpen, Trophy, Gamepad2, Video, Sparkles, User, LogOut, Menu, X, Flame, Shield, ChevronDown, PlusCircle, ShieldAlert, Info, Coins, ShoppingBag, ShoppingCart } from 'lucide-react';
 
 interface NavbarProps {
   currentTab: string;
@@ -8,6 +8,8 @@ interface NavbarProps {
   user: UserProfile;
   onOpenLogin: () => void;
   onLogout: () => void;
+  cartCount?: number;
+  onOpenCart?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -15,20 +17,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   onTabChange,
   user,
   onOpenLogin,
-  onLogout
+  onLogout,
+  cartCount = 0,
+  onOpenCart
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const navItems = [
     { id: 'discover', label: 'หน้าแรก', icon: Sparkles },
-    { id: 'about', label: 'เกี่ยวกับเรา', icon: Info },
     { id: 'mycourses', label: 'คอร์สของฉัน', icon: BookOpen },
     { id: 'classroom', label: 'ห้องเรียนส่วนตัว', icon: Video },
-    { id: 'leaderboard', label: 'อันดับ & เกียรติยศ', icon: Trophy },
     { id: 'games', label: 'มินิเกมท้าทาย', icon: Gamepad2 },
-    { id: 'creator', label: 'Creator Studio', icon: PlusCircle },
-    { id: 'admin', label: 'Admin Portal', icon: ShieldAlert },
+    { id: 'coinshop', label: 'เติมเหรียญ & แพ็กเกจ VIP', icon: Coins },
+    { id: 'shop', label: 'ร้านค้าของตกแต่ง', icon: ShoppingBag },
+    { id: 'creator', label: 'ศูนย์ครีเอเตอร์', icon: PlusCircle },
+    { id: 'leaderboard', label: 'อันดับ & เกียรติยศ', icon: Trophy },
+    { id: 'about', label: 'เกี่ยวกับเรา', icon: Info },
   ];
 
   const roleLabels = {
@@ -84,9 +89,28 @@ export const Navbar: React.FC<NavbarProps> = ({
           })}
         </nav>
 
-        {/* Right Auth / Profile Button */}
-        <div className="hidden sm:flex items-center gap-3 shrink-0">
-          {user.isLoggedIn ? (
+        {/* Right Header Controls (Cart + Auth/Profile) */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          
+          {/* Shopping Cart Header Icon Button */}
+          {onOpenCart && (
+            <button
+              onClick={onOpenCart}
+              className="relative bg-[#F1F2F6] hover:bg-[#C2E114]/30 p-2.5 rounded-full border border-[#E0E0E0] transition-all cursor-pointer group text-[#2D3436] hover:text-[#2D3436]"
+              title="ตะกร้าสินค้า (Shopping Cart)"
+            >
+              <ShoppingCart className="w-5 h-5 group-hover:scale-110 transition-transform text-[#2D3436]" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full min-w-[18px] text-center shadow-xs animate-bounce">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* Desktop Auth / Profile Button */}
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
+            {user.isLoggedIn ? (
             <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -118,6 +142,36 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" /> สตรีค {user.streakDays} วัน • {user.coins} 🪙
                     </div>
                   </div>
+
+                  <button
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      onTabChange('profile');
+                    }}
+                    className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-[#F1F2F6] flex items-center gap-2 text-[#2D3436]"
+                  >
+                    <User className="w-4 h-4 text-[#8A9914]" /> โปรไฟล์ & แก้ไขข้อมูลส่วนตัว
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      onTabChange('shop');
+                    }}
+                    className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-[#F1F2F6] flex items-center gap-2 text-[#2D3436]"
+                  >
+                    <ShoppingBag className="w-4 h-4 text-purple-600" /> ร้านค้าของตกแต่งโปรไฟล์
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      onTabChange('coinshop');
+                    }}
+                    className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-[#F1F2F6] flex items-center gap-2 text-[#2D3436]"
+                  >
+                    <Coins className="w-4 h-4 text-amber-500" /> เติมเหรียญ & สมัคร EduPass VIP
+                  </button>
 
                   <button
                     onClick={() => {
@@ -172,6 +226,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
         </div>
+      </div>
 
         {/* Mobile Menu Toggle */}
         <button
@@ -212,12 +267,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="pt-3 border-t border-[#E0E0E0]">
             {user.isLoggedIn ? (
-              <div className="flex items-center justify-between bg-[#F1F2F6] p-3 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <img src={user.avatar} className="w-9 h-9 rounded-full bg-[#C2E114]" />
-                  <div>
-                    <p className="text-xs font-bold text-[#2D3436]">{user.name}</p>
-                    <p className="text-[11px] text-[#8A9914]">{roleLabels[user.role || 'student']} • {user.school}</p>
+              <div className="flex items-center justify-between bg-[#F1F2F6] p-3 rounded-xl gap-2">
+                <div 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onTabChange('profile');
+                  }}
+                  className="flex items-center gap-3 cursor-pointer group hover:opacity-80 transition-opacity flex-1 min-w-0"
+                  title="คลิกเพื่อไปหน้าโปรไฟล์ & แก้ไขข้อมูล"
+                >
+                  <img src={user.avatar} className="w-9 h-9 rounded-full bg-[#C2E114] object-cover shrink-0 group-hover:scale-105 transition-transform" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-[#2D3436] truncate group-hover:text-[#8A9914] transition-colors">{user.name}</p>
+                    <p className="text-[11px] text-[#8A9914] truncate">{roleLabels[user.role || 'student']} • {user.school}</p>
                   </div>
                 </div>
                 <button
@@ -225,7 +287,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setMobileMenuOpen(false);
                     onLogout();
                   }}
-                  className="text-xs text-red-600 hover:text-red-700 font-bold px-3 py-1 bg-red-100 rounded-lg"
+                  className="text-xs text-red-600 hover:text-red-700 font-bold px-3 py-1.5 bg-red-100 hover:bg-red-200 rounded-lg shrink-0 transition-colors cursor-pointer"
                 >
                   ออก
                 </button>

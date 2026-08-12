@@ -176,7 +176,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   }`}
                 >
                   <Video className={`w-5 h-5 ${selectedRole === 'creator' ? 'text-[#8A9914]' : 'text-[#636E72]'}`} />
-                  <span className="text-xs">ครีเอเตอร์ / ครู</span>
+                  <span className="text-xs">ครีเอเตอร์</span>
                 </button>
 
                 <button
@@ -189,7 +189,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   }`}
                 >
                   <ShieldAlert className={`w-5 h-5 ${selectedRole === 'admin' ? 'text-[#8A9914]' : 'text-[#636E72]'}`} />
-                  <span className="text-xs">ผู้ดูแล / ผู้พัฒนา</span>
+                  <span className="text-xs">ผู้พัฒนา</span>
                 </button>
               </div>
             </div>
@@ -239,7 +239,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             {/* Method A: Google OAuth */}
             {authMethod === 'google' && (
               <div className="space-y-4 text-center py-2">
-                <p className="text-xs text-[#636E72]">
+                <p className="text-[11px] text-[#636E72]">
                   ลงชื่อเข้าใช้รวดเร็วและปลอดภัยด้วยบัญชี Google ของคุณ ({selectedRole === 'student' ? 'นักเรียน' : selectedRole === 'creator' ? 'ครูผู้ลงสื่อ' : 'ผู้พัฒนาเว็บ'})
                 </p>
 
@@ -421,21 +421,24 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               <div className="flex justify-center gap-2 text-xs">
                 <button
                   onClick={() => onLoginSuccess({ name: 'ด.ช. กิตติศักดิ์', phone: '081-111-1111', email: 'student@demo.com', role: 'student', school: 'โรงเรียนชุมชนบ้านดอน', grade: 'ม.2' })}
-                  className="px-2.5 py-1 bg-[#F1F2F6] hover:bg-gray-200 text-[#2D3436] rounded-lg font-bold"
+                  className="px-2.5 py-1.5 bg-[#F1F2F6] hover:bg-gray-200 text-[#2D3436] rounded-xl font-bold text-[11px] leading-tight text-center"
                 >
-                  🎓 ทดสอบเป็นนักเรียน
+                  🎓 ทดสอบ <br />
+                  เป็นนักเรียน
                 </button>
                 <button
                   onClick={() => onLoginSuccess({ name: 'ครูพี่เป้ (Creator)', phone: '081-222-2222', email: 'teacher@demo.com', role: 'creator', school: 'โรงเรียนไกลกังวล', grade: 'ม.2' })}
-                  className="px-2.5 py-1 bg-[#C2E114]/20 hover:bg-[#C2E114]/40 text-[#2D3436] rounded-lg font-bold"
+                  className="px-2.5 py-1.5 bg-[#C2E114]/20 hover:bg-[#C2E114]/40 text-[#2D3436] rounded-xl font-bold text-[11px] leading-tight text-center"
                 >
-                  🎨 ทดสอบเป็นครีเอเตอร์
+                  🎨 ทดสอบ <br />
+                  เป็นครีเอเตอร์
                 </button>
                 <button
                   onClick={() => onLoginSuccess({ name: 'ผู้ดูแลระบบ (Admin)', phone: '081-333-3333', email: 'admin@demo.com', role: 'admin', school: 'EduThai Dev Team', grade: 'ม.3' })}
-                  className="px-2.5 py-1 bg-[#2D3436] hover:bg-black text-white rounded-lg font-bold"
+                  className="px-2.5 py-1.5 bg-[#2D3436] hover:bg-black text-white rounded-xl font-bold text-[11px] leading-tight text-center"
                 >
-                  🛠️ ทดสอบเป็นผู้พัฒนา
+                  🛠️ ทดสอบ <br />
+                  เป็นผู้พัฒนา
                 </button>
               </div>
             </div>

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Course, Lesson, QuizQuestion, Comment, UserProfile } from '../types';
 import { Play, Pause, CheckCircle2, Lock, Award, Heart, MessageSquare, Flag, Send, HelpCircle, Download, FileText, ChevronRight, Sparkles, X, Check, ThumbsUp, AlertCircle } from 'lucide-react';
+import { AdModal } from './AdModal';
 
 interface ClassroomViewProps {
   course: Course;
@@ -19,6 +20,16 @@ export const ClassroomView: React.FC<ClassroomViewProps> = ({
   onCompleteQuiz,
   onBackToFeed
 }) => {
+  // Ad Modal State
+  const [adModalOpen, setAdModalOpen] = useState(false);
+  const [adPurpose, setAdPurpose] = useState<'startCourse' | 'startQuiz'>('startCourse');
+
+  // Trigger course start ad on initial load
+  useEffect(() => {
+    setAdPurpose('startCourse');
+    setAdModalOpen(true);
+  }, [course.id]);
+
   const [selectedLesson, setSelectedLesson] = useState<Lesson>(
     course.lessons[1] || course.lessons[0] || {
       id: 'default',
@@ -305,7 +316,10 @@ export const ClassroomView: React.FC<ClassroomViewProps> = ({
               </div>
 
               <button
-                onClick={() => setQuizModalOpen(true)}
+                onClick={() => {
+                  setAdPurpose('startQuiz');
+                  setAdModalOpen(true);
+                }}
                 className="w-full sm:w-auto bg-[#C2E114] hover:bg-[#b0cc10] text-[#1A1C1C] font-extrabold px-6 py-3 rounded-xl text-xs shadow-md shadow-[#C2E114]/30 flex items-center justify-center gap-2 transition-all transform active:scale-98 shrink-0"
               >
                 <HelpCircle className="w-4 h-4" /> เริ่มทำ Adaptive Quiz (+100 EXP)
@@ -520,10 +534,14 @@ export const ClassroomView: React.FC<ClassroomViewProps> = ({
                 /* Quiz Complete Celebration */
                 <div className="text-center space-y-4 py-4">
                   <div className="w-20 h-20 bg-[#C2E114] text-[#1A1C1C] rounded-full flex items-center justify-center mx-auto text-3xl font-black shadow-lg shadow-[#C2E114]/40 animate-bounce">
-                    🎉
+                    {quizScore === defaultQuizQuestions.length ? '🎉' : '💪'}
                   </div>
 
-                  <h3 className="text-2xl font-black text-gray-900">เก่งมาก! ทำควิซสำเร็จแล้ว</h3>
+                  <h3 className="text-2xl font-black text-gray-900">
+                    {quizScore === defaultQuizQuestions.length
+                      ? 'เก่งมาก! ทำควิซสำเร็จแล้ว'
+                      : 'มาพยายามกันเพิ่มเถอะ'}
+                  </h3>
                   <p className="text-xs text-gray-600">
                     ตอบถูกต้อง <span className="font-bold text-gray-900">{quizScore}</span> จาก {defaultQuizQuestions.length} ข้อ
                   </p>
@@ -598,6 +616,19 @@ export const ClassroomView: React.FC<ClassroomViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Ad Modal for course start and quiz start */}
+      <AdModal
+        isOpen={adModalOpen}
+        onClose={() => setAdModalOpen(false)}
+        onProceed={() => {
+          setAdModalOpen(false);
+          if (adPurpose === 'startQuiz') {
+            setQuizModalOpen(true);
+          }
+        }}
+        title={adPurpose === 'startQuiz' ? 'โฆษณาสนับสนุนก่อนทำควิซ' : 'โฆษณาสนับสนุนก่อนเริ่มคอร์ส'}
+      />
 
     </div>
   );

@@ -1,11 +1,48 @@
+export interface CartItem {
+  cartItemId: string;
+  itemId: string;
+  type: 'course' | 'decor' | 'coinPackage';
+  title: string;
+  categoryName: string;
+  price: number;
+  currency: 'COINS' | 'THB';
+  thumbnail?: string;
+  originalItem?: any;
+}
+
 export type GradeLevel = 'ม.1' | 'ม.2' | 'ม.3';
 
 export type SubjectType = 'คณิตศาสตร์' | 'วิทยาศาสตร์' | 'ภาษาอังกฤษ' | 'ภาษาไทย' | 'เทคโนโลยี/Coding' | 'สังคมศึกษา';
 
 export type UserRole = 'student' | 'creator' | 'admin';
 
+export interface SubscriptionPass {
+  isActive: boolean;
+  planName: string;
+  expiresAt: string;
+  isMonthly: boolean;
+}
+
+export interface DecorItem {
+  id: string;
+  name: string;
+  type: 'avatar' | 'frame' | 'effect';
+  price: number; // 0 = default/free
+  description: string;
+  avatarUrl?: string; // for avatar items
+  frameBorderClass?: string; // css classes for border/glow
+  frameBadge?: string;
+  effectClass?: string; // animation/glow effect
+  effectBadge?: string;
+  tag?: string; // e.g. 'HOT', 'NEW', 'VIP', 'RERENDER'
+}
+
 export interface UserProfile {
   isLoggedIn: boolean;
+  username?: string;
+  description?: string;
+  gender?: string;
+  dateOfBirth?: string;
   phone: string;
   email?: string;
   name: string;
@@ -19,8 +56,17 @@ export interface UserProfile {
   level: number;
   coins: number;
   streakDays: number;
-  avatar: string;
+  avatar: string; // Active primary avatar image
   isOnboarded: boolean;
+  
+  // Customization & Shop Inventory
+  equippedFrameId?: string;
+  equippedEffectId?: string;
+  ownedAvatars?: string[];
+  ownedFrameIds?: string[];
+  ownedEffectIds?: string[];
+  subscriptionPass?: SubscriptionPass;
+
   bankAccount?: {
     bankName: string;
     accountNumber: string;

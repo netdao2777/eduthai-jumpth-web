@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Gamepad2, Timer, Zap, Trophy, Heart, Star, Sparkles, Filter, PlusCircle, ArrowLeft, Play, Award, CheckCircle2, XCircle, Search, UserCheck } from 'lucide-react';
 import { CreatorGame, SubjectType, GradeLevel } from '../types';
 import { CREATOR_GAMES } from '../mockData';
+import { AdModal } from './AdModal';
 
 interface QuizGameArenaProps {
   onAwardCoinsAndExp: (exp: number, coins: number) => void;
@@ -12,6 +13,10 @@ export const QuizGameArena: React.FC<QuizGameArenaProps> = ({ onAwardCoinsAndExp
   const [games, setGames] = useState<CreatorGame[]>(CREATOR_GAMES);
   const [selectedSubject, setSelectedSubject] = useState<string>('ทั้งหมด');
   const [searchTerm, setSearchTerm] = useState<string>('');
+
+  // Ad Modal State before playing
+  const [isAdOpen, setIsAdOpen] = useState(false);
+  const [pendingGameToStart, setPendingGameToStart] = useState<CreatorGame | null>(null);
 
   // Active playing game state
   const [activeGame, setActiveGame] = useState<CreatorGame | null>(null);
@@ -47,8 +52,15 @@ export const QuizGameArena: React.FC<QuizGameArenaProps> = ({ onAwardCoinsAndExp
     return () => clearInterval(interval);
   }, [gameState, activeGame, timeLeft, selectedOpt]);
 
-  // Start Playing Game
+  // Trigger Ad before Playing Game
   const handleStartGame = (game: CreatorGame) => {
+    setPendingGameToStart(game);
+    setIsAdOpen(true);
+  };
+
+  const handleProceedStartGame = () => {
+    const game = pendingGameToStart;
+    if (!game) return;
     setActiveGame(game);
     setGameState('playing');
     setCurrentQuestionIdx(0);
@@ -176,8 +188,12 @@ export const QuizGameArena: React.FC<QuizGameArenaProps> = ({ onAwardCoinsAndExp
       <section className="bg-gradient-to-r from-[#2D3436] via-[#3d4548] to-[#2D3436] text-white p-6 sm:p-8 rounded-2xl shadow-md relative overflow-hidden space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 bg-[#C2E114] text-[#2D3436] font-extrabold text-xs px-3.5 py-1 rounded-full">
-              <Gamepad2 className="w-4 h-4" /> Creator Games Hub (คลังมินิเกมจากครีเอเตอร์)
+            <div className="inline-flex items-center gap-2 bg-[#C2E114] text-[#2D3436] font-extrabold text-xs px-3.5 py-1.5 rounded-xl">
+              <Gamepad2 className="w-4 h-4 shrink-0" />
+              <span>
+                Creator Games Hub <br />
+                (คลังมินิเกมจากครีเอเตอร์)
+              </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               มินิเกมท้าทายจากครู & ครีเอเตอร์
@@ -189,9 +205,13 @@ export const QuizGameArena: React.FC<QuizGameArenaProps> = ({ onAwardCoinsAndExp
 
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="bg-[#C2E114] hover:bg-[#8A9914] text-[#2D3436] hover:text-white font-extrabold px-5 py-3 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all shrink-0"
+            className="bg-[#C2E114] hover:bg-[#8A9914] text-[#2D3436] hover:text-white font-extrabold px-5 py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all shrink-0 text-center"
           >
-            <PlusCircle className="w-4 h-4" /> สร้างมินิเกมของคุณ (Creator Studio)
+            <PlusCircle className="w-5 h-5 shrink-0" />
+            <span>
+              สร้างมินิเกมของคุณ <br />
+              (Creator Studio)
+            </span>
           </button>
         </div>
 
@@ -232,9 +252,13 @@ export const QuizGameArena: React.FC<QuizGameArenaProps> = ({ onAwardCoinsAndExp
       {/* Mode 1: Games Gallery (Lobby) */}
       {gameState === 'lobby' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[#2D3436] flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#8A9914]" /> มินิเกมพร้อมเล่น ({filteredGames.length} เกม)
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h2 className="text-lg font-bold text-[#2D3436] flex items-start sm:items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#8A9914] shrink-0 mt-0.5 sm:mt-0" />
+              <span>
+                มินิเกมพร้อมเล่น <br className="sm:hidden" />
+                <span className="text-base font-semibold text-[#8A9914]">({filteredGames.length} เกม)</span>
+              </span>
             </h2>
             <span className="text-xs text-[#636E72]">อัปเดตเกมใหม่โดยครีเอเตอร์ทุกสัปดาห์</span>
           </div>
@@ -447,14 +471,28 @@ export const QuizGameArena: React.FC<QuizGameArenaProps> = ({ onAwardCoinsAndExp
       {gameState === 'ended' && activeGame && (
         <div className="max-w-md mx-auto card p-8 text-center space-y-6">
           <div className="w-20 h-20 bg-[#C2E114] text-[#2D3436] rounded-full flex items-center justify-center mx-auto text-3xl font-black shadow-md">
-            🏆
+            {score === activeGame.questions.length ? '🏆' : '💪'}
           </div>
 
           <div>
-            <h2 className="text-xl font-extrabold text-[#2D3436]">เก่งมาก! เล่นจบเกมแล้ว</h2>
-            <p className="text-xs text-[#636E72] mt-1">
-              {activeGame.title} โดย {activeGame.creatorName}
-            </p>
+            <h2 className="text-xl font-extrabold text-[#2D3436]">
+              {score === activeGame.questions.length
+                ? 'เก่งมาก! เล่นจบเกมแล้ว'
+                : 'มาพยายามกันเพิ่มเถอะ'}
+            </h2>
+            <div className="text-xs text-[#636E72] mt-2 leading-relaxed space-y-1">
+              {activeGame.title.includes(' โดย ') ? (
+                <>
+                  <div className="font-semibold">{activeGame.title.split(' โดย ')[0]}</div>
+                  <div>โดย {activeGame.title.split(' โดย ').slice(1).join(' โดย ')}</div>
+                </>
+              ) : (
+                <>
+                  <div className="font-semibold">{activeGame.title}</div>
+                  <div>โดย {activeGame.creatorName}</div>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="p-4 bg-[#F1F2F6] rounded-xl border border-[#E0E0E0] space-y-2">
@@ -652,6 +690,14 @@ export const QuizGameArena: React.FC<QuizGameArenaProps> = ({ onAwardCoinsAndExp
           </div>
         </div>
       )}
+
+      {/* Ad Modal before game starts */}
+      <AdModal
+        isOpen={isAdOpen}
+        onClose={() => setIsAdOpen(false)}
+        onProceed={handleProceedStartGame}
+        title="โฆษณาสนับสนุนก่อนเล่นมินิเกม"
+      />
 
     </div>
   );

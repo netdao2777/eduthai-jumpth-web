@@ -44,87 +44,86 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
               </span>
             </div>
             <h2 className="text-xl font-bold text-white">ทำภารกิจสะสม EXP & เหรียญ</h2>
-            <p className="text-gray-300 text-xs mt-1">
-              ภารกิจจะถูกรีเซ็ตใหม่ทุกวันเวลา 00:00 น. เพื่อส่งเสริมวินัยการเรียนสม่ำเสมอ
+            <p className="text-gray-300 text-xs mt-1 leading-relaxed">
+              ภารกิจจะถูกรีเซ็ตใหม่ทุกวันเวลา 00:00 น. <br />
+              เพื่อส่งเสริมวินัยการเรียนสม่ำเสมอ
             </p>
           </div>
 
-          <div className="p-6 space-y-4">
-            {quests.map((quest) => (
-              <div
-                key={quest.id}
-                className={`p-4 rounded-2xl border-2 transition-all ${
-                  quest.isCompleted
-                    ? 'bg-emerald-50/50 border-emerald-200'
-                    : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <div>
-                    <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+          <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            {[...quests]
+              .sort((a, b) => {
+                if (a.isCompleted && !b.isCompleted) return 1;
+                if (!a.isCompleted && b.isCompleted) return -1;
+                return 0;
+              })
+              .map((quest) => (
+                <div
+                  key={quest.id}
+                  className={`p-4 rounded-2xl border-2 transition-all ${
+                    quest.isCompleted
+                      ? 'bg-emerald-50/40 border-emerald-200 opacity-90'
+                      : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="space-y-1.5 mb-3">
+                    <h3 className="font-bold text-gray-900 text-xs sm:text-sm leading-snug">
                       {quest.title}
-                      {quest.isCompleted && (
-                        <span className="text-emerald-600 text-xs font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-4 h-4" /> สำเร็จแล้ว
-                        </span>
-                      )}
                     </h3>
-                    <p className="text-xs text-gray-600 mt-0.5">{quest.description}</p>
-                  </div>
-
-                  {/* Rewards Badge */}
-                  <div className="flex items-center gap-1.5 shrink-0 bg-white px-2.5 py-1 rounded-xl border border-gray-200 text-xs font-bold shadow-2xs">
-                    <span className="text-[#8A9914]">+{quest.expReward} EXP</span>
-                    <span className="text-gray-300">|</span>
-                    <span className="text-amber-600">+{quest.coinsReward} 🪙</span>
-                  </div>
-                </div>
-
-                {/* Progress bar & Action */}
-                <div className="flex items-center justify-between gap-4 mt-3 pt-2 border-t border-gray-200/60">
-                  <div className="flex-1">
-                    <div className="flex justify-between text-[11px] text-gray-500 font-medium mb-1">
-                      <span>ความคืบหน้า</span>
-                      <span>{quest.progress}/{quest.total}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-300 ${
-                          quest.isCompleted ? 'bg-emerald-500' : 'bg-[#C2E114]'
-                        }`}
-                        style={{ width: `${Math.min((quest.progress / quest.total) * 100, 100)}%` }}
-                      />
+                    <p className="text-xs text-gray-600 leading-relaxed">{quest.description}</p>
+                    
+                    {/* Rewards Badge below description */}
+                    <div className="pt-1">
+                      <div className="inline-flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-gray-200 text-xs font-bold shadow-2xs">
+                        <span className="text-[#8A9914]">+{quest.expReward} EXP</span>
+                        <span className="text-gray-300">|</span>
+                        <span className="text-amber-600">+{quest.coinsReward} 🪙</span>
+                      </div>
                     </div>
                   </div>
 
-                  {quest.isCompleted ? (
-                    <button
-                      disabled
-                      className="bg-emerald-100 text-emerald-800 text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1 cursor-default"
-                    >
-                      รับรางวัลแล้ว
-                    </button>
-                  ) : quest.progress >= quest.total ? (
-                    <button
-                      onClick={() => onClaimReward(quest.id)}
-                      className="bg-[#C2E114] hover:bg-[#b0cc10] text-[#1A1C1C] text-xs font-bold px-4 py-2 rounded-xl shadow-md flex items-center gap-1 animate-bounce"
-                    >
-                      <Gift className="w-3.5 h-3.5" /> กดรับรางวัล
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        onClose();
-                        onNavigateQuest(quest.targetView);
-                      }}
-                      className="bg-[#1A1C1C] hover:bg-black text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1 transition-all"
-                    >
-                      ไปทำภารกิจ <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+                  {/* Progress bar & Action */}
+                  <div className="flex items-center justify-between gap-4 pt-2 border-t border-gray-200/60">
+                    <div className="flex-1">
+                      <div className="flex justify-between text-[11px] text-gray-500 font-medium mb-1">
+                        <span>ความคืบหน้า</span>
+                        <span>{quest.progress}/{quest.total}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${
+                            quest.isCompleted ? 'bg-emerald-500' : 'bg-[#C2E114]'
+                          }`}
+                          style={{ width: `${Math.min((quest.progress / quest.total) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {quest.isCompleted ? (
+                      <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 shrink-0 cursor-default">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> สำเร็จแล้ว
+                      </span>
+                    ) : quest.progress >= quest.total ? (
+                      <button
+                        onClick={() => onClaimReward(quest.id)}
+                        className="bg-[#C2E114] hover:bg-[#b0cc10] text-[#1A1C1C] text-xs font-bold px-4 py-2 rounded-xl shadow-md flex items-center gap-1 animate-bounce shrink-0"
+                      >
+                        <Gift className="w-3.5 h-3.5" /> กดรับรางวัล
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          onClose();
+                          onNavigateQuest(quest.targetView);
+                        }}
+                        className="bg-[#1A1C1C] hover:bg-black text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1 transition-all shrink-0"
+                      >
+                        ไปทำภารกิจ <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </motion.div>
       </div>
