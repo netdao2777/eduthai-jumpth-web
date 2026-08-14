@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserProfile, Course, Comment, LeaderboardUser, Badge, DailyQuest, UserRole, DecorItem, CartItem } from './types';
+import { UserProfile, Course, Comment, LeaderboardUser, Badge, DailyQuest, UserRole, DecorItem, CartItem, SubscriptionPlanType, SubscriptionDuration } from './types';
 import { INITIAL_COURSES, INITIAL_COMMENTS, LEADERBOARD_USERS, BADGES_LIST, DAILY_QUESTS } from './mockData';
 import { DECOR_AVATARS, DECOR_FRAMES, DECOR_EFFECTS } from './data/decorShopData';
 import { Navbar } from './components/Navbar';
@@ -20,6 +20,7 @@ import { LoginModal } from './components/LoginModal';
 import { OnboardingModal } from './components/OnboardingModal';
 import { DailyQuestsModal } from './components/DailyQuestsModal';
 import { CartDrawerModal } from './components/CartDrawerModal';
+import { DonationModal } from './components/DonationModal';
 import { AiTutorFab } from './components/AiTutorFab';
 import { Sparkles } from 'lucide-react';
 
@@ -44,7 +45,7 @@ export default function App() {
     interests: ['ปัญญาประดิษฐ์ AI', 'เกมการเรียนรู้'],
     exp: 3450,
     level: 8,
-    coins: 18500,
+    coins: 1850,
     streakDays: 14,
     avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=TeacherPae',
     equippedFrameId: 'frame-neon-glow',
@@ -79,12 +80,58 @@ export default function App() {
   const [cartModalOpen, setCartModalOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
+  // Voluntary Donation State
+  const [donationModalOpen, setDonationModalOpen] = useState(false);
+  const [donationTargetType, setDonationTargetType] = useState<'platform' | 'creator'>('platform');
+  const [donationTargetName, setDonationTargetName] = useState<string>('โครงการเพื่อการศึกษาเท่าเทียม (JUMP TH Platform)');
+  const [donationRecipientAvatar, setDonationRecipientAvatar] = useState<string | undefined>(undefined);
+  const [donationCourseTitle, setDonationCourseTitle] = useState<string | undefined>(undefined);
+
   // Celebration Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Open Platform Donation
+  const handleOpenDonatePlatform = () => {
+    setDonationTargetType('platform');
+    setDonationTargetName('โครงการเพื่อการศึกษาเท่าเทียม (JUMP TH Platform)');
+    setDonationRecipientAvatar(undefined);
+    setDonationCourseTitle(undefined);
+    setDonationModalOpen(true);
+  };
+
+  // Open Creator Donation
+  const handleOpenDonateCreator = (instructorName: string, courseTitle?: string) => {
+    setDonationTargetType('creator');
+    setDonationTargetName(instructorName);
+    setDonationRecipientAvatar(undefined);
+    setDonationCourseTitle(courseTitle || selectedCourse?.title);
+    setDonationModalOpen(true);
+  };
+
+  // Confirm Donation Execution
+  const handleConfirmDonation = (amount: number, message: string) => {
+    if (user.coins < amount) {
+      showToast(`⚠️ เหรียญสะสมไม่เพียงพอ (คุณมี ${user.coins} เหรียญ ขาดอีก ${(amount - user.coins).toLocaleString()} เหรียญ)`);
+      return;
+    }
+
+    // Deduct coins & give generous kindness EXP bonus (+25 EXP per donation)
+    setUser(prev => ({
+      ...prev,
+      coins: prev.coins - amount,
+      exp: prev.exp + 25
+    }));
+
+    if (donationTargetType === 'platform') {
+      showToast(`💖 ขอบคุณที่ร่วมสนับสนุนแพลตฟอร์ม ${amount} เหรียญ! (+25 EXP ค่าความดี)`);
+    } else {
+      showToast(`🎁 ส่งเหรียญ ${amount} เหรียญและข้อความให้ "${donationTargetName}" สำเร็จแล้ว! (+25 EXP)`);
+    }
   };
 
   // Cart Handler Functions
@@ -271,6 +318,24 @@ export default function App() {
 
   // Course Enroll
   const handleEnrollCourse = (courseId: string) => {
+    const targetCourse = courses.find(c => c.id === courseId);
+    if (!targetCourse) return;
+
+    const hasBuffetPass = Boolean(user.subscriptionPass?.isActive && user.subscriptionPass?.canAccessBuffet);
+    const isBuffetCourse = Boolean(targetCourse.isBuffetIncluded);
+
+    // Check if course has price and user needs to pay (unless covered by buffet pass)
+    if (targetCourse.priceCoins && targetCourse.priceCoins > 0 && !(isBuffetCourse && hasBuffetPass)) {
+      if (user.coins < targetCourse.priceCoins) {
+        showToast(`⚠️ คอร์สนี้ต้องใช้ ${targetCourse.priceCoins} เหรียญ หรือสมัครแพ็กเกจเรียนไม่อั้น`);
+        return;
+      }
+      setUser(prev => ({
+        ...prev,
+        coins: prev.coins - (targetCourse.priceCoins || 0)
+      }));
+    }
+
     setCourses(prev =>
       prev.map(c => {
         if (c.id === courseId) {
@@ -280,13 +345,21 @@ export default function App() {
       })
     );
 
+    const isVIP = Boolean(user.subscriptionPass?.isActive && user.subscriptionPass?.isPremiumPerks);
+    const earnedExp = isVIP ? (targetCourse.expReward * 2 || 300) : (targetCourse.expReward || 150);
+    const earnedCoins = isVIP ? 100 : 50;
+
     setUser(prev => ({
       ...prev,
-      exp: prev.exp + 150,
-      coins: prev.coins + 50
+      exp: prev.exp + earnedExp,
+      coins: prev.coins + earnedCoins
     }));
 
-    showToast('ลงเรียนสำเร็จ! รับโบนัส +150 EXP และ +50 เหรียญ 🪙');
+    if (isBuffetCourse && hasBuffetPass) {
+      showToast(`⚡ ลงเรียนสำเร็จด้วยสิทธิ์บุฟเฟ่ต์เรียนไม่อั้น (Buffet Pass)! รับ +${earnedExp} EXP และ +${earnedCoins} เหรียญ 🪙`);
+    } else {
+      showToast(`ลงเรียนสำเร็จ! รับโบนัส +${earnedExp} EXP และ +${earnedCoins} เหรียญ 🪙`);
+    }
   };
 
   // Add Comment in Classroom
@@ -365,17 +438,50 @@ export default function App() {
   };
 
   // Subscribe Pass
-  const handleSubscribePass = (planName: string, days: number) => {
+  const handleSubscribePass = (
+    planType: SubscriptionPlanType,
+    duration: SubscriptionDuration,
+    planName: string,
+    days: number,
+    paymentCurrency: 'THB' | 'COINS' = 'THB',
+    price: number = 0
+  ) => {
+    if (paymentCurrency === 'COINS' && price > 0) {
+      if (user.coins < price) {
+        showToast('⚠️ เหรียญไม่เพียงพอสำหรับการสมัครแพ็กเกจ');
+        return;
+      }
+      setUser(prev => ({ ...prev, coins: prev.coins - price }));
+    }
+
+    const durationLabels: Record<SubscriptionDuration, string> = {
+      '1_week': '7 วัน',
+      '1_month': '30 วัน',
+      '3_months': '90 วัน',
+      '1_year': '365 วัน'
+    };
+
+    const canAccessBuffet = planType === 'unlimited' || planType === 'premium';
+    const canSkipAds = planType === 'no_ads' || planType === 'premium';
+    const isPremiumPerks = planType === 'premium';
+
     setUser(prev => ({
       ...prev,
       subscriptionPass: {
         isActive: true,
+        type: planType,
+        duration,
         planName,
-        expiresAt: '30 วันนับจากวันนี้',
-        isMonthly: days <= 31
+        expiresAt: `${durationLabels[duration] || '30 วัน'} นับจากวันนี้`,
+        isMonthly: duration === '1_month',
+        canAccessBuffet,
+        canSkipAds,
+        isPremiumPerks,
+        daysRemaining: days
       }
     }));
-    showToast(`👑 เปิดใช้งาน ${planName} เรียบร้อยแล้ว! เรียนบุฟเฟต์ฟรีทุกคอร์สที่ร่วมรายการ`);
+
+    showToast(`👑 เปิดใช้งาน "${planName}" (${durationLabels[duration] || ''}) สำเร็จ! ${canAccessBuffet ? '⚡ ปลดล็อกคอร์สบุฟเฟ่ต์เรียนไม่อั้น' : ''} ${canSkipAds ? '🛡️ ข้ามโฆษณา 100%' : ''}`);
   };
 
   // Buy Decor Item
@@ -484,6 +590,7 @@ export default function App() {
             onStartFree={() => setLoginModalOpen(true)}
             onExploreCourses={() => setCurrentTab('discover')}
             onOpenAbout={() => setCurrentTab('about')}
+            onOpenDonatePlatform={handleOpenDonatePlatform}
           />
         )}
 
@@ -507,6 +614,8 @@ export default function App() {
             onEnrollCourse={handleEnrollCourse}
             onStartOnboarding={() => setOnboardingModalOpen(true)}
             onAddCourseToCart={handleAddCourseToCart}
+            onOpenDonatePlatform={handleOpenDonatePlatform}
+            onNavigateSubscription={() => setCurrentTab('coinshop')}
           />
         )}
 
@@ -531,6 +640,7 @@ export default function App() {
             onAddComment={handleAddComment}
             onCompleteQuiz={handleCompleteQuiz}
             onBackToFeed={() => setCurrentTab('discover')}
+            onOpenDonateCreator={(instructor) => handleOpenDonateCreator(instructor, selectedCourse?.title)}
           />
         )}
 
@@ -658,6 +768,19 @@ export default function App() {
         onClearCart={handleClearCart}
         onCheckoutCart={handleCheckoutCart}
         onNavigateToShop={() => setCurrentTab('shop')}
+      />
+
+      {/* Voluntary Donation Modal (Platform & Creator) */}
+      <DonationModal
+        isOpen={donationModalOpen}
+        onClose={() => setDonationModalOpen(false)}
+        user={user}
+        targetType={donationTargetType}
+        targetName={donationTargetName}
+        courseTitle={donationCourseTitle}
+        recipientAvatar={donationRecipientAvatar}
+        onConfirmDonate={handleConfirmDonation}
+        onNavigateTopUp={() => setCurrentTab('coinshop')}
       />
 
     </div>

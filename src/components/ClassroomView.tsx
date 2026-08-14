@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Course, Lesson, QuizQuestion, Comment, UserProfile } from '../types';
-import { Play, Pause, CheckCircle2, Lock, Award, Heart, MessageSquare, Flag, Send, HelpCircle, Download, FileText, ChevronRight, Sparkles, X, Check, ThumbsUp, AlertCircle } from 'lucide-react';
+import { Play, Pause, CheckCircle2, Lock, Award, Heart, MessageSquare, Flag, Send, HelpCircle, Download, FileText, ChevronRight, Sparkles, X, Check, ThumbsUp, AlertCircle, Gift, Coins, ShieldCheck, Crown } from 'lucide-react';
 import { AdModal } from './AdModal';
 
 interface ClassroomViewProps {
@@ -10,6 +10,7 @@ interface ClassroomViewProps {
   onAddComment: (text: string) => void;
   onCompleteQuiz: (exp: number, coins: number) => void;
   onBackToFeed: () => void;
+  onOpenDonateCreator?: (instructorName: string) => void;
 }
 
 export const ClassroomView: React.FC<ClassroomViewProps> = ({
@@ -18,17 +19,22 @@ export const ClassroomView: React.FC<ClassroomViewProps> = ({
   user,
   onAddComment,
   onCompleteQuiz,
-  onBackToFeed
+  onBackToFeed,
+  onOpenDonateCreator
 }) => {
+  const canSkipAds = Boolean(user?.subscriptionPass?.isActive && user?.subscriptionPass?.canSkipAds);
+
   // Ad Modal State
   const [adModalOpen, setAdModalOpen] = useState(false);
   const [adPurpose, setAdPurpose] = useState<'startCourse' | 'startQuiz'>('startCourse');
 
-  // Trigger course start ad on initial load
+  // Trigger course start ad on initial load ONLY if user does not have Ad-Free pass
   useEffect(() => {
-    setAdPurpose('startCourse');
-    setAdModalOpen(true);
-  }, [course.id]);
+    if (!canSkipAds) {
+      setAdPurpose('startCourse');
+      setAdModalOpen(true);
+    }
+  }, [course.id, canSkipAds]);
 
   const [selectedLesson, setSelectedLesson] = useState<Lesson>(
     course.lessons[1] || course.lessons[0] || {
@@ -157,15 +163,27 @@ export const ClassroomView: React.FC<ClassroomViewProps> = ({
       )}
 
       {/* Course Header Bar */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <button
           onClick={onBackToFeed}
-          className="text-xs font-bold text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-4 py-2 rounded-xl transition-all"
+          className="text-xs font-bold text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-4 py-2 rounded-xl transition-all cursor-pointer"
         >
           ← ย้อนกลับไปหน้ารายวิชา
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {canSkipAds && (
+            <span className="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3 py-1 rounded-full flex items-center gap-1 border border-emerald-300">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Ad-Free Active (ข้ามโฆษณา)</span>
+            </span>
+          )}
+          {user?.subscriptionPass?.isActive && user?.subscriptionPass?.isPremiumPerks && (
+            <span className="bg-amber-100 text-amber-900 text-xs font-extrabold px-3 py-1 rounded-full flex items-center gap-1 border border-amber-300">
+              <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+              <span>VIP x2 EXP & Coins</span>
+            </span>
+          )}
           <span className="bg-[#1A1C1C] text-[#C2E114] text-xs font-bold px-3 py-1 rounded-full">
             {course.subject} • {course.grade}
           </span>
@@ -256,13 +274,25 @@ export const ClassroomView: React.FC<ClassroomViewProps> = ({
                 <p className="text-xs text-gray-500 mt-1">{course.title} • {course.school}</p>
               </div>
 
-              {/* Social Buttons: Like, Share, Report */}
-              <div className="flex items-center gap-2 shrink-0">
+              {/* Social Buttons: Like, Donate, Report */}
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
                 
+                {/* Creator Tip / Donate Button */}
+                {onOpenDonateCreator && (
+                  <button
+                    onClick={() => onOpenDonateCreator(course.instructor)}
+                    className="flex items-center gap-1.5 px-4 py-2.5 bg-[#2D3436] hover:bg-black text-white hover:text-[#C2E114] rounded-2xl text-xs font-black shadow-xs hover:shadow-md transition-all cursor-pointer transform active:scale-95"
+                    title="ร่วมสนับสนุนคุณครูผู้สอนด้วยเหรียญ (ขั้นต่ำ 1 เหรียญ แบบไม่บังคับ)"
+                  >
+                    <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+                    <span>สนับสนุนผู้สอน (1+ 🪙)</span>
+                  </button>
+                )}
+
                 {/* Like Button */}
                 <button
                   onClick={handleToggleLike}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all border ${
+                  className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all border cursor-pointer ${
                     isLiked
                       ? 'bg-rose-50 border-rose-200 text-rose-600'
                       : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
@@ -275,7 +305,7 @@ export const ClassroomView: React.FC<ClassroomViewProps> = ({
                 {/* Report Content Button */}
                 <button
                   onClick={() => setReportModalOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-2.5 bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-2xl text-xs font-bold border border-gray-200 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2.5 bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-2xl text-xs font-bold border border-gray-200 transition-all cursor-pointer"
                   title="รายงานเนื้อหาไม่เหมาะสม"
                 >
                   <Flag className="w-3.5 h-3.5" /> รายงาน
@@ -317,10 +347,14 @@ export const ClassroomView: React.FC<ClassroomViewProps> = ({
 
               <button
                 onClick={() => {
-                  setAdPurpose('startQuiz');
-                  setAdModalOpen(true);
+                  if (canSkipAds) {
+                    setQuizModalOpen(true);
+                  } else {
+                    setAdPurpose('startQuiz');
+                    setAdModalOpen(true);
+                  }
                 }}
-                className="w-full sm:w-auto bg-[#C2E114] hover:bg-[#b0cc10] text-[#1A1C1C] font-extrabold px-6 py-3 rounded-xl text-xs shadow-md shadow-[#C2E114]/30 flex items-center justify-center gap-2 transition-all transform active:scale-98 shrink-0"
+                className="w-full sm:w-auto bg-[#C2E114] hover:bg-[#b0cc10] text-[#1A1C1C] font-extrabold px-6 py-3 rounded-xl text-xs shadow-md shadow-[#C2E114]/30 flex items-center justify-center gap-2 transition-all transform active:scale-98 shrink-0 cursor-pointer"
               >
                 <HelpCircle className="w-4 h-4" /> เริ่มทำ Adaptive Quiz (+100 EXP)
               </button>
@@ -445,6 +479,7 @@ export const ClassroomView: React.FC<ClassroomViewProps> = ({
               })}
             </div>
           </div>
+
         </div>
 
       </div>

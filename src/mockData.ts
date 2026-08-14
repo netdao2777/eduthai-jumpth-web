@@ -1,4 +1,4 @@
-import { Course, LeaderboardUser, Badge, DailyQuest, Comment, CreatorGame, CreatorContent, WithdrawalRequest, AdminTicket } from './types';
+import { Course, LeaderboardUser, Badge, DailyQuest, Comment, CreatorGame, CreatorContent, WithdrawalRequest, AdminTicket, DonationRecord, BankAccountInfo, MonthlyPayoutRecord } from './types';
 
 export const INITIAL_COURSES: Course[] = [
   {
@@ -16,6 +16,8 @@ export const INITIAL_COURSES: Course[] = [
     progress: 65,
     isEnrolled: true,
     isRecommended: true,
+    isBuffetIncluded: true,
+    priceCoins: 0,
     rating: 4.9,
     description: 'เรียนรู้การแก้สมการเชิงเส้นตัวแปรเดียว การย้ายข้างสมการ และการแก้โจทย์ปัญหาประยุกต์ในชีวิตประจำวันอย่างเป็นขั้นตอน เหมาะสำหรับนักเรียน ม.2 ทุกระดับความรู้',
     lessons: [
@@ -97,6 +99,8 @@ export const INITIAL_COURSES: Course[] = [
     progress: 40,
     isEnrolled: true,
     isRecommended: true,
+    isBuffetIncluded: true,
+    priceCoins: 0,
     rating: 4.8,
     description: 'เจาะลึกกระบวนการสังเคราะห์ด้วยแสงของพืช หน้าที่ของคลอโรฟิลล์ ปากใบ และการลำเลียงน้ำผ่านท่อไซเล็ม (Xylem) และโฟลเอ็ม (Phloem)',
     lessons: [
@@ -144,6 +148,8 @@ export const INITIAL_COURSES: Course[] = [
     progress: 0,
     isEnrolled: false,
     isRecommended: true,
+    isBuffetIncluded: true,
+    priceCoins: 120,
     rating: 5.0,
     description: 'เรียนรู้ทักษะการคิดเชิงคำนวณ (Computational Thinking) ผังงาน (Flowchart) และการเขียนโปรแกรมภาษา Python สำหรับผู้เริ่มต้น',
     lessons: [
@@ -173,6 +179,8 @@ export const INITIAL_COURSES: Course[] = [
     progress: 0,
     isEnrolled: false,
     isRecommended: false,
+    isBuffetIncluded: true,
+    priceCoins: 80,
     rating: 4.7,
     description: 'เคลียร์ทุกความสับสนในการใช้ Tense ยอดฮิตพร้อมเทคนิคตัดตัวเลือกข้อสอบเตรียมอุดมและ O-NET ม.3',
     lessons: []
@@ -192,8 +200,10 @@ export const INITIAL_COURSES: Course[] = [
     progress: 0,
     isEnrolled: false,
     isRecommended: false,
+    isBuffetIncluded: false, // คอร์สเอ็กซ์คลูซีฟ ซื้อแยกเดี่ยว
+    priceCoins: 60,
     rating: 4.9,
-    description: 'ถอดบทเรียน ถอดคำประพันธ์ และวิเคราะห์คุณค่าทางวรรณศิลป์ สังคม และคุณธรรมจากวรรณคดีชั้นครู',
+    description: 'ถอดบทเรียน ถอดคำประพันธ์ และวิเคราะห์คุณค่าทางวรรณศิลป์ สังคม และคุณธรรมจากวรรณคดีชั้นครู (คอร์สพิเศษซื้อเดี่ยว)',
     lessons: []
   },
   {
@@ -211,6 +221,8 @@ export const INITIAL_COURSES: Course[] = [
     progress: 0,
     isEnrolled: false,
     isRecommended: false,
+    isBuffetIncluded: true,
+    priceCoins: 50,
     rating: 4.6,
     description: 'เรียนรู้ลักษณะทางภูมิศาสตร์ของ 6 ภาคในประเทศไทย เครื่องมือทางภูมิศาสตร์ และแนวทางป้องกันภัยพิบัติ',
     lessons: []
@@ -613,7 +625,8 @@ export const MOCK_CREATOR_CONTENTS: CreatorContent[] = [
     rating: 4.9,
     createdDate: '10 ส.ค. 2026',
     thumbnail: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80',
-    creatorName: 'ครูพี่เป้ (ครูรางวัลสมเด็จเจ้าฟ้ามหาจักรี)'
+    creatorName: 'ครูพี่เป้ (ครูรางวัลสมเด็จเจ้าฟ้ามหาจักรี)',
+    isBuffetIncluded: true
   },
   {
     id: 'cc-102',
@@ -628,7 +641,8 @@ export const MOCK_CREATOR_CONTENTS: CreatorContent[] = [
     rating: 4.8,
     createdDate: '08 ส.ค. 2026',
     thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80',
-    creatorName: 'ครูพี่เป้ (ครูรางวัลสมเด็จเจ้าฟ้ามหาจักรี)'
+    creatorName: 'ครูพี่เป้ (ครูรางวัลสมเด็จเจ้าฟ้ามหาจักรี)',
+    isBuffetIncluded: true
   },
   {
     id: 'cc-103',
@@ -644,7 +658,8 @@ export const MOCK_CREATOR_CONTENTS: CreatorContent[] = [
     rating: 5.0,
     createdDate: '11 ส.ค. 2026',
     thumbnail: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=800&q=80',
-    creatorName: 'ครูพี่เป้ (ครูรางวัลสมเด็จเจ้าฟ้ามหาจักรี)'
+    creatorName: 'ครูพี่เป้ (ครูรางวัลสมเด็จเจ้าฟ้ามหาจักรี)',
+    isBuffetIncluded: true
   },
   {
     id: 'cc-104',
@@ -659,14 +674,78 @@ export const MOCK_CREATOR_CONTENTS: CreatorContent[] = [
     rating: 4.9,
     createdDate: '05 ส.ค. 2026',
     thumbnail: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=800&q=80',
-    creatorName: 'ดร.สมชาย ใจดี (สสวท.)'
+    creatorName: 'ดร.สมชาย ใจดี (สสวท.)',
+    isBuffetIncluded: false
+  }
+];
+
+export const MOCK_CREATOR_BANK_ACCOUNT: BankAccountInfo = {
+  bankName: 'ธนาคารกสิกรไทย (KBank)',
+  accountNumber: '123-2-89472-1',
+  accountName: 'สมชาย ใจดี',
+  branchName: 'สาขาสยามพารากอน',
+  isVerified: true,
+  updatedAt: '01 ส.ค. 2026'
+};
+
+export const MOCK_MONTHLY_PAYOUTS: MonthlyPayoutRecord[] = [
+  {
+    id: 'pay-2026-08',
+    monthPeriod: 'สิงหาคม 2026 (รอบปัจจุบัน)',
+    payoutDate: '01 ก.ย. 2026',
+    courseRevenueThb: 10000,
+    donationRevenueThb: 150,
+    totalGrossThb: 10150,
+    commissionFeeThb: 406, // 4% of 10,150
+    platformMaintenanceFeeThb: 203, // 2% of 10,150
+    totalDeductionsThb: 609, // 406 + 203
+    netPayoutThb: 9541, // 10,150 - 609
+    bankName: 'ธนาคารกสิกรไทย (KBank)',
+    accountNumber: '123-2-89472-1',
+    accountName: 'สมชาย ใจดี',
+    status: 'scheduled',
+    transactionRef: 'AUTOPAY-20260901-8891'
+  },
+  {
+    id: 'pay-2026-07',
+    monthPeriod: 'กรกฎาคม 2026',
+    payoutDate: '01 ส.ค. 2026',
+    courseRevenueThb: 8500,
+    donationRevenueThb: 200,
+    totalGrossThb: 8700,
+    commissionFeeThb: 348, // 4% of 8,700
+    platformMaintenanceFeeThb: 174, // 2% of 8,700
+    totalDeductionsThb: 522, // 348 + 174
+    netPayoutThb: 8178, // 8,700 - 522
+    bankName: 'ธนาคารกสิกรไทย (KBank)',
+    accountNumber: '123-2-89472-1',
+    accountName: 'สมชาย ใจดี',
+    status: 'completed',
+    transactionRef: 'AUTOPAY-20260801-4421'
+  },
+  {
+    id: 'pay-2026-06',
+    monthPeriod: 'มิถุนายน 2026',
+    payoutDate: '01 ก.ค. 2026',
+    courseRevenueThb: 6200,
+    donationRevenueThb: 100,
+    totalGrossThb: 6300,
+    commissionFeeThb: 252, // 4% of 6,300
+    platformMaintenanceFeeThb: 126, // 2% of 6,300
+    totalDeductionsThb: 378, // 252 + 126
+    netPayoutThb: 5922, // 6,300 - 378
+    bankName: 'ธนาคารกสิกรไทย (KBank)',
+    accountNumber: '123-2-89472-1',
+    accountName: 'สมชาย ใจดี',
+    status: 'completed',
+    transactionRef: 'AUTOPAY-20260701-1109'
   }
 ];
 
 export const MOCK_WITHDRAWALS: WithdrawalRequest[] = [
   {
     id: 'wd-2026-001',
-    coinsAmount: 5000,
+    coinsAmount: 500,
     thbAmount: 500,
     commissionThb: 50,
     netThb: 450,
@@ -678,7 +757,7 @@ export const MOCK_WITHDRAWALS: WithdrawalRequest[] = [
   },
   {
     id: 'wd-2026-002',
-    coinsAmount: 12000,
+    coinsAmount: 1200,
     thbAmount: 1200,
     commissionThb: 120,
     netThb: 1080,
@@ -713,5 +792,45 @@ export const MOCK_ADMIN_TICKETS: AdminTicket[] = [
     createdDate: '12 ส.ค. 2026'
   }
 ];
+
+export const MOCK_DONATIONS: DonationRecord[] = [
+  {
+    id: 'dn-001',
+    targetType: 'creator',
+    targetName: 'ดร.สมชาย ใจดี (สสวท.)',
+    donorName: 'น้องน้ำหวาน ม.2',
+    coinsAmount: 50,
+    message: 'ขอบคุณคุณครูมากค่ะ เข้าใจวิชาคณิตศาสตร์ขึ้นเยอะเลย!',
+    timestamp: '10 นาทีที่แล้ว'
+  },
+  {
+    id: 'dn-002',
+    targetType: 'platform',
+    targetName: 'โครงการเพื่อการศึกษาเท่าเทียม (EdTech for All)',
+    donorName: 'กิตติศักดิ์ พ.',
+    coinsAmount: 100,
+    message: 'ขอเป็นกำลังใจให้ทีมงานพัฒนาแพลตฟอร์มการศึกษาฟรีดีๆ แบบนี้ต่อไปครับ',
+    timestamp: '1 ชั่วโมงที่แล้ว'
+  },
+  {
+    id: 'dn-003',
+    targetType: 'creator',
+    targetName: 'ครูพี่เป้ วิทย์-คณิต',
+    donorName: 'เด็กชายวินัย ม.3',
+    coinsAmount: 20,
+    message: 'ชีทสรุปสูตรเจ๋งมากครับอาจารย์',
+    timestamp: '3 ชั่วโมงที่แล้ว'
+  },
+  {
+    id: 'dn-004',
+    targetType: 'creator',
+    targetName: 'ดร.สมชาย ใจดี (สสวท.)',
+    donorName: 'อนันต์ ท.',
+    coinsAmount: 10,
+    message: 'ทิปกาแฟให้คุณครูครับ ขอบคุณที่สอนฟรีครับ',
+    timestamp: 'เมื่อวานนี้'
+  }
+];
+
 
 

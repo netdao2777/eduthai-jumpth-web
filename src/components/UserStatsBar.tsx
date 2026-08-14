@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserProfile, DailyQuest } from '../types';
-import { Flame, Coins, Trophy, CheckCircle2, Award, Sparkles, ChevronRight } from 'lucide-react';
+import { Flame, Coins, Trophy, CheckCircle2, Award, Sparkles, ChevronRight, Crown } from 'lucide-react';
 
 interface UserStatsBarProps {
   user: UserProfile;
@@ -50,6 +50,12 @@ export const UserStatsBar: React.FC<UserStatsBarProps> = ({
               <span className="bg-[#F1F2F6] text-[#636E72] text-[11px] px-2 py-0.5 rounded-full font-semibold">
                 {user.grade}
               </span>
+              {user.subscriptionPass?.isActive && (
+                <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] px-2 py-0.5 rounded-full font-extrabold flex items-center gap-1">
+                  <Crown className="w-3 h-3 fill-amber-500 text-amber-500" />
+                  {user.subscriptionPass.planName}
+                </span>
+              )}
             </div>
 
             {/* EXP Progress Bar */}

@@ -16,11 +16,20 @@ export type SubjectType = 'คณิตศาสตร์' | 'วิทยาศ
 
 export type UserRole = 'student' | 'creator' | 'admin';
 
+export type SubscriptionPlanType = 'unlimited' | 'no_ads' | 'premium';
+export type SubscriptionDuration = '1_week' | '1_month' | '3_months' | '1_year';
+
 export interface SubscriptionPass {
   isActive: boolean;
+  type: SubscriptionPlanType; // 'unlimited' (เรียนไม่อั้น) | 'no_ads' (ข้ามโฆษณา) | 'premium' (ครบทุกอย่าง)
+  duration: SubscriptionDuration; // '1_week' | '1_month' | '3_months' | '1_year'
   planName: string;
   expiresAt: string;
-  isMonthly: boolean;
+  daysRemaining?: number;
+  canAccessBuffet: boolean; // เข้าเรียนคอร์สที่ร่วมรายการบุฟเฟ่ต์ได้ฟรี
+  canSkipAds: boolean; // ข้ามโฆษณาคั่นได้ทั้งหมด
+  isPremiumPerks?: boolean; // สิทธิประโยชน์พิเศษ VIP เช่น โบนัส EXP x2, โหลดชีท PDF HD, มงกุฎทอง
+  isMonthly?: boolean;
 }
 
 export interface DecorItem {
@@ -89,6 +98,34 @@ export interface CreatorContent {
   createdDate: string;
   thumbnail: string;
   creatorName: string;
+  isBuffetIncluded?: boolean; // เข้าร่วมแคมเปญบุฟเฟ่ต์เรียนไม่อั้น
+}
+
+export interface BankAccountInfo {
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  branchName?: string;
+  isVerified: boolean;
+  updatedAt?: string;
+}
+
+export interface MonthlyPayoutRecord {
+  id: string;
+  monthPeriod: string; // e.g. 'สิงหาคม 2026'
+  payoutDate: string; // e.g. '01 ก.ย. 2026'
+  courseRevenueThb: number; // รายได้จากคอร์สเรียน
+  donationRevenueThb: number; // รายได้จากโดเนท
+  totalGrossThb: number; // รวมรายได้ทั้งหมด (คอร์ส + โดเนท)
+  commissionFeeThb: number; // หักคอมมิชชั่น 4%
+  platformMaintenanceFeeThb: number; // หักค่าบำรุงแพลตฟอร์ม 2%
+  totalDeductionsThb: number; // รวมหัก 6%
+  netPayoutThb: number; // ยอดสุทธิที่จะโอนเข้าบัญชี
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  status: 'scheduled' | 'processing' | 'completed';
+  transactionRef?: string;
 }
 
 export interface WithdrawalRequest {
@@ -114,6 +151,16 @@ export interface AdminTicket {
   status: 'open' | 'resolved';
   createdDate: string;
   reply?: string;
+}
+
+export interface DonationRecord {
+  id: string;
+  targetType: 'platform' | 'creator';
+  targetName: string;
+  donorName: string;
+  coinsAmount: number;
+  message?: string;
+  timestamp: string;
 }
 
 
@@ -155,6 +202,8 @@ export interface Course {
   rating: number;
   isEnrolled: boolean;
   isRecommended?: boolean;
+  priceCoins?: number; // 0 = Free, or coin price for single purchase
+  isBuffetIncluded?: boolean; // เข้าร่วมแคมเปญบุฟเฟ่ต์เรียนไม่อั้น (Unlimited Buffet Pass)
   lessons: Lesson[];
 }
 

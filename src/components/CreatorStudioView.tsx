@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { UserProfile, CreatorContent, WithdrawalRequest, AdminTicket, SubjectType, GradeLevel } from '../types';
-import { MOCK_CREATOR_CONTENTS, MOCK_WITHDRAWALS } from '../mockData';
-import { BarChart3, Video, PlusCircle, Clock, Wallet, HelpCircle, Sparkles, CheckCircle2, AlertCircle, XCircle, TrendingUp, Users, Play, Award, DollarSign, Building2, Send, ChevronRight } from 'lucide-react';
+import { UserProfile, CreatorContent, BankAccountInfo, MonthlyPayoutRecord, AdminTicket, SubjectType, GradeLevel } from '../types';
+import { MOCK_CREATOR_CONTENTS, MOCK_CREATOR_BANK_ACCOUNT, MOCK_MONTHLY_PAYOUTS } from '../mockData';
+import { BarChart3, Video, PlusCircle, Clock, Wallet, HelpCircle, Sparkles, CheckCircle2, AlertCircle, XCircle, TrendingUp, Users, Play, Award, DollarSign, Building2, Send, ChevronRight, Calendar, CreditCard, Percent, ShieldCheck, Edit3, Save, Check, Coins, Heart, BookOpen, Info, Receipt, ArrowDownRight, RefreshCw, Zap } from 'lucide-react';
 
 interface CreatorStudioViewProps {
   user: UserProfile;
@@ -14,8 +14,8 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
   onRequestWithdrawal,
   onSendAdminTicket
 }) => {
-  // Active Sub-Tab: 'dashboard' | 'upload' | 'status' | 'withdrawal' | 'contact'
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'status' | 'withdrawal' | 'contact'>('dashboard');
+  // Active Sub-Tab: 'dashboard' | 'upload' | 'status' | 'payout' | 'contact'
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'status' | 'payout' | 'contact'>('dashboard');
 
   // Creator Content State
   const [contents, setContents] = useState<CreatorContent[]>(MOCK_CREATOR_CONTENTS);
@@ -26,17 +26,38 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
   const [subject, setSubject] = useState<SubjectType>('คณิตศาสตร์');
   const [grade, setGrade] = useState<GradeLevel>('ม.2');
   const [priceCoins, setPriceCoins] = useState<number>(0);
+  const [isBuffetIncluded, setIsBuffetIncluded] = useState<boolean>(true);
   const [videoUrl, setVideoUrl] = useState('');
   const [description, setDescription] = useState('');
   const [uploadSuccessMsg, setUploadSuccessMsg] = useState('');
 
-  // Withdrawal Form State
-  const [withdrawCoins, setWithdrawCoins] = useState<number>(user.coins || 5000);
-  const [bankName, setBankName] = useState('ธนาคารกสิกรไทย (KBank)');
-  const [accountNumber, setAccountNumber] = useState('123-4-56789-0');
-  const [accountName, setAccountName] = useState(user.name || 'ครูผู้ลงสื่อ');
-  const [withdrawalsHistory, setWithdrawalsHistory] = useState<WithdrawalRequest[]>(MOCK_WITHDRAWALS);
-  const [withdrawalSuccess, setWithdrawalSuccess] = useState('');
+  // Bank Account Binding State
+  const [bankAccount, setBankAccount] = useState<BankAccountInfo>(MOCK_CREATOR_BANK_ACCOUNT);
+  const [isEditingBank, setIsEditingBank] = useState(false);
+  const [editBankName, setEditBankName] = useState(MOCK_CREATOR_BANK_ACCOUNT.bankName);
+  const [editAccountNumber, setEditAccountNumber] = useState(MOCK_CREATOR_BANK_ACCOUNT.accountNumber);
+  const [editAccountName, setEditAccountName] = useState(MOCK_CREATOR_BANK_ACCOUNT.accountName);
+  const [editBranchName, setEditBranchName] = useState(MOCK_CREATOR_BANK_ACCOUNT.branchName || '');
+  const [bankSuccessMsg, setBankSuccessMsg] = useState('');
+
+  // Monthly Revenue Breakdown & Calculations (Sample real data + simulation)
+  const [courseRevenue, setCourseRevenue] = useState<number>(10000); // 10,000 บาท ตามตัวอย่างโจทย์
+  const [donationRevenue, setDonationRevenue] = useState<number>(150); // 150 บาท ตามตัวอย่างโจทย์
+  const [monthlyPayouts, setMonthlyPayouts] = useState<MonthlyPayoutRecord[]>(MOCK_MONTHLY_PAYOUTS);
+
+  // Financial Calculations:
+  // 1) Total Gross = Course Revenue + Donation Revenue
+  const totalGrossRevenue = courseRevenue + donationRevenue; // e.g. 10,000 + 150 = 10,150 บาท
+  // 2) Platform Commission = 4% of total gross
+  const commissionRate = 0.04;
+  const commissionFee = Math.round(totalGrossRevenue * commissionRate * 100) / 100; // e.g. 406.00 บาท
+  // 3) Platform Maintenance Fee = 2% of total gross
+  const maintenanceRate = 0.02;
+  const maintenanceFee = Math.round(totalGrossRevenue * maintenanceRate * 100) / 100; // e.g. 203.00 บาท
+  // 4) Total Deductions (6%) = 4% + 2%
+  const totalDeductions = Math.round((commissionFee + maintenanceFee) * 100) / 100; // e.g. 609.00 บาท
+  // 5) Estimated Net Payout on the 1st of month
+  const netEstimatedPayout = Math.round((totalGrossRevenue - totalDeductions) * 100) / 100; // e.g. 9,541.00 บาท
 
   // Contact Admin Form State
   const [ticketSubject, setTicketSubject] = useState('');
@@ -56,6 +77,39 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
     }
   ]);
 
+  // Handle Save Bank Account
+  const handleSaveBankAccount = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editAccountNumber.trim() || !editAccountName.trim()) return;
+
+    const updated: BankAccountInfo = {
+      bankName: editBankName,
+      accountNumber: editAccountNumber.trim(),
+      accountName: editAccountName.trim(),
+      branchName: editBranchName.trim() || undefined,
+      isVerified: true,
+      updatedAt: 'วันนี้'
+    };
+
+    setBankAccount(updated);
+    setIsEditingBank(false);
+    setBankSuccessMsg('บันทึกและผูกบัญชีธนาคารสำเร็จ! ระบบจะโอนเงินรายได้อัตโนมัติเข้าบัญชีนี้ทุกวันที่ 1 ของทุกเดือน');
+    setTimeout(() => setBankSuccessMsg(''), 4000);
+  };
+
+  // Handle Toggle Buffet Campaign for a content
+  const handleToggleBuffetCampaign = (contentId: string) => {
+    setContents(prev =>
+      prev.map(item => {
+        if (item.id === contentId) {
+          const nextVal = !item.isBuffetIncluded;
+          return { ...item, isBuffetIncluded: nextVal };
+        }
+        return item;
+      })
+    );
+  };
+
   // Handle New Content Upload
   const handleUploadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +122,7 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
       subject,
       grade,
       priceCoins,
+      isBuffetIncluded,
       status: 'pending',
       adminNote: 'รอแอดมินตรวจสอบความถูกต้องของเนื้อหา',
       views: 0,
@@ -86,46 +141,12 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
     setDescription('');
     setVideoUrl('');
     setPriceCoins(0);
+    setIsBuffetIncluded(true);
 
     setTimeout(() => {
       setUploadSuccessMsg('');
       setActiveTab('status');
     }, 1800);
-  };
-
-  // Handle Withdrawal Submission
-  const handleWithdrawSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (withdrawCoins < 500) {
-      alert('จำนวนเหรียญขั้นต่ำในการถอนคือ 500 เหรียญ (50 บาท)');
-      return;
-    }
-
-    const thbAmount = Math.floor(withdrawCoins / 10); // 10 coins = 1 THB
-    const commissionThb = Math.floor(thbAmount * 0.10); // 10% platform fee
-    const netThb = thbAmount - commissionThb;
-
-    const newReq: WithdrawalRequest = {
-      id: `wd-${Date.now()}`,
-      coinsAmount: withdrawCoins,
-      thbAmount,
-      commissionThb,
-      netThb,
-      bankName,
-      accountNumber,
-      accountName,
-      status: 'pending',
-      requestedDate: 'วันนี้'
-    };
-
-    setWithdrawalsHistory([newReq, ...withdrawalsHistory]);
-    setWithdrawalSuccess(`ส่งคำขอถอนเงิน ${withdrawCoins.toLocaleString()} เหรียญ (${netThb.toLocaleString()} บาท) เรียบร้อยแล้ว!`);
-
-    if (onRequestWithdrawal) {
-      onRequestWithdrawal(withdrawCoins);
-    }
-
-    setTimeout(() => setWithdrawalSuccess(''), 3000);
   };
 
   // Handle Support Ticket Submit
@@ -160,8 +181,8 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
   // Dashboard Stats Calculations
   const totalViews = contents.reduce((sum, c) => sum + c.views, 0);
   const totalStudents = contents.reduce((sum, c) => sum + c.studentsEnrolled, 0);
-  const totalCoinsEarned = 18500; // Simulated earnings
-  const totalThbValue = Math.floor(totalCoinsEarned / 10);
+  const totalCoinsEarned = user.coins || 1850; // Use creator actual coins
+  const totalThbValue = totalCoinsEarned; // 1 Coin = 1 Baht standard
 
   return (
     <div className="space-y-8 pb-16 max-w-7xl mx-auto px-4">
@@ -227,14 +248,14 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('withdrawal')}
+            onClick={() => setActiveTab('payout')}
             className={`px-3 py-1.5 rounded-lg font-extrabold text-[11px] sm:text-sm whitespace-nowrap shrink-0 transition-all duration-150 cursor-pointer active:scale-95 ${
-              activeTab === 'withdrawal'
+              activeTab === 'payout'
                 ? 'bg-[#2D3436] text-[#C2E114] shadow-2xs font-black'
                 : 'text-[#2D3436] hover:bg-white/60 hover:text-black font-bold'
             }`}
           >
-            ถอนเงินสะสม ({totalThbValue.toLocaleString()} บาท)
+            รายได้ & รับเงินอัตโนมัติ (วันที่ 1)
           </button>
 
           <button
@@ -295,16 +316,20 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
               </p>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-[#E0E0E0] shadow-2xs space-y-2">
+            <div 
+              onClick={() => setActiveTab('payout')}
+              className="bg-white p-5 rounded-2xl border border-[#E0E0E0] shadow-2xs space-y-2 hover:border-[#8A9914] transition-all cursor-pointer group"
+            >
               <div className="flex items-center justify-between text-xs font-bold text-[#636E72]">
-                <span>เหรียญสะสม (Coins Earned)</span>
-                <DollarSign className="w-4 h-4 text-amber-500" />
+                <span>ประมาณการโอนรอบวันที่ 1</span>
+                <DollarSign className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl font-black text-[#2D3436]">
-                {totalCoinsEarned.toLocaleString()} 🪙
+              <div className="text-2xl font-black text-emerald-700">
+                {netEstimatedPayout.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} บาท
               </div>
-              <p className="text-[11px] text-amber-600 font-extrabold">
-                ประมาณ ≈ {totalThbValue.toLocaleString()} บาท
+              <p className="text-[11px] text-emerald-600 font-extrabold flex items-center justify-between">
+                <span>หัก 6% (คอมมิชชั่น 4% + บำรุง 2%)</span>
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-emerald-700 transition-colors" />
               </p>
             </div>
           </div>
@@ -578,6 +603,27 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
               </div>
             </div>
 
+            {/* Buffet Campaign Participation Checkbox Card */}
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl space-y-2">
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isBuffetIncluded}
+                  onChange={e => setIsBuffetIncluded(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 text-blue-600 rounded focus:ring-blue-500 accent-blue-600 cursor-pointer"
+                />
+                <div>
+                  <div className="font-extrabold text-[#2D3436] text-xs flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                    <span>ยินยอมให้คอร์สนี้เข้าร่วม "แคมเปญบุฟเฟ่ต์เรียนไม่อั้น (Buffet Campaign)"</span>
+                  </div>
+                  <p className="text-[11px] text-gray-600 mt-1 leading-relaxed">
+                    ผู้ใช้งานที่สมัครแพ็กเกจเรียนไม่อั้น (Unlimited / Premium) จะสามารถเข้าเรียนคอร์สนี้ได้ทันที โดยคุณครูจะได้รับส่วนแบ่งรายได้จากกองทุนสมาชิกบุฟเฟ่ต์ประจำเดือนตามชั่วโมงการรับชมจริง และรับเงินโอนอัตโนมัติทุกวันที่ 1
+                  </p>
+                </div>
+              </label>
+            </div>
+
             <div>
               <label className="block text-[#2D3436] font-bold mb-1">ลิงก์วิดีโอ หรือลิงก์ไฟล์สื่อ (YouTube / Drive / MP4)</label>
               <input
@@ -638,6 +684,26 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
                       </div>
                       <p className="text-xs text-[#636E72]">{item.subject} • {item.grade} • ยอดวิว {item.views.toLocaleString()} ครั้ง</p>
                       
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        {item.isBuffetIncluded ? (
+                          <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-blue-200">
+                            <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
+                            <span>ร่วมแคมเปญบุฟเฟ่ต์เรียนไม่อั้น</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-gray-200">
+                            <span>คอร์สเดี่ยว (ไม่อยู่ในบุฟเฟ่ต์)</span>
+                          </span>
+                        )}
+
+                        <button
+                          onClick={() => handleToggleBuffetCampaign(item.id)}
+                          className="text-[10px] font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                        >
+                          {item.isBuffetIncluded ? 'ถอนตัวจากบุฟเฟ่ต์' : 'เข้าร่วมแคมเปญบุฟเฟ่ต์'}
+                        </button>
+                      </div>
+                      
                       {item.adminNote && (
                         <p className="text-xs text-[#8A9914] font-medium bg-[#F8F9FA] p-2 rounded-lg border border-[#E0E0E0]">
                           💬 <strong>หมายเหตุแอดมิน:</strong> {item.adminNote}
@@ -672,131 +738,511 @@ export const CreatorStudioView: React.FC<CreatorStudioViewProps> = ({
         </div>
       )}
 
-      {/* Tab 4: Withdrawal & Payout System */}
-      {activeTab === 'withdrawal' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Tab 4: Automatic Monthly Payout & Bank Account Binding */}
+      {activeTab === 'payout' && (
+        <div className="space-y-6">
           
-          {/* Left: Withdrawal Form */}
-          <div className="lg:col-span-1 bg-white p-6 rounded-2xl border border-[#E0E0E0] shadow-2xs space-y-5">
-            <div>
-              <h3 className="font-bold text-[#2D3436] text-base">ระบบถอนเงินสะสม</h3>
-              <p className="text-xs text-[#636E72]">อัตราแลกเปลี่ยน: 10 เหรียญ Coins = 1 บาท (หักค่าธรรมเนียมแพลตฟอร์ม 10%)</p>
+          {/* Top Hero: Automatic Monthly Payout Info Banner */}
+          <div className="bg-gradient-to-br from-[#2D3436] via-[#3a4447] to-[#2D3436] text-white p-6 sm:p-7 rounded-3xl border border-gray-800 shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 bg-[#C2E114] text-[#2D3436] font-extrabold text-[11px] px-3.5 py-1 rounded-full">
+                  <Calendar className="w-3.5 h-3.5" /> โอนจ่ายอัตโนมัติต้นเดือน • ทุกวันที่ 1
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-white">
+                  ระบบโอนรายได้อัตโนมัติประจำเดือน (Auto Monthly Payout)
+                </h2>
+                <p className="text-xs sm:text-sm text-gray-300 max-w-2xl leading-relaxed">
+                  ครีเอเตอร์และคุณครูผู้สอน<strong>ไม่ต้องกดทำรายการถอนเงินเอง</strong> ระบบจะสรุปรวมรายได้จากยอดซื้อคอร์สเรียนและยอดเงินโดเนททั้งหมดในแต่ละเดือน นำไปหักค่าคอมมิชชั่น 4% และค่าบำรุงแพลตฟอร์ม 2% (รวมหัก 6%) จากนั้นโอนเข้าบัญชีธนาคารของคุณโดยตรงในวันที่ 1 ของทุกเดือน
+                </p>
+              </div>
+
+              {/* Next Payout Highlight Box */}
+              <div className="bg-white/10 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/20 text-right shrink-0 space-y-1 min-w-[240px]">
+                <div className="text-[11px] text-gray-300 font-bold flex items-center justify-end gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-[#C2E114]" /> รอบโอนเงินอัตโนมัติถัดไป
+                </div>
+                <div className="text-xl sm:text-2xl font-black text-[#C2E114]">
+                  01 กันยายน 2026
+                </div>
+                <div className="text-xs text-gray-200">
+                  ประมาณการสุทธิ: <strong className="text-white text-sm font-black">{netEstimatedPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</strong>
+                </div>
+              </div>
             </div>
-
-            <div className="p-4 bg-[#F8F9FA] rounded-xl border border-[#E0E0E0] space-y-1">
-              <div className="text-xs text-[#636E72] font-semibold">ยอดเหรียญสะสมที่คุณมี</div>
-              <div className="text-2xl font-black text-[#2D3436]">{user.coins?.toLocaleString() || 18500} Coins</div>
-              <div className="text-xs text-[#8A9914] font-extrabold">มูลค่ารวม ≈ {Math.floor((user.coins || 18500) / 10).toLocaleString()} บาท</div>
-            </div>
-
-            {withdrawalSuccess && (
-              <div className="p-3 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold">
-                {withdrawalSuccess}
-              </div>
-            )}
-
-            <form onSubmit={handleWithdrawSubmit} className="space-y-4 text-xs font-medium">
-              <div>
-                <label className="block text-[#2D3436] font-bold mb-1">ระบุจำนวนเหรียญที่ต้องการถอน *</label>
-                <input
-                  type="number"
-                  step={100}
-                  min={500}
-                  max={user.coins || 18500}
-                  value={withdrawCoins}
-                  onChange={e => setWithdrawCoins(Number(e.target.value))}
-                  className="w-full p-3 bg-[#F8F9FA] border border-[#E0E0E0] rounded-xl text-xs font-bold text-[#2D3436]"
-                />
-              </div>
-
-              {/* Fee breakdown box */}
-              <div className="p-3 bg-[#F1F2F6] rounded-xl space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-[#636E72]">เงินที่ได้ก่อนหัก:</span>
-                  <span className="font-bold text-[#2D3436]">{(withdrawCoins / 10).toLocaleString()} บาท</span>
-                </div>
-                <div className="flex justify-between text-rose-600">
-                  <span>ค่าคอมมิชชันแพลตฟอร์ม (10%):</span>
-                  <span>-{(withdrawCoins / 10 * 0.10).toLocaleString()} บาท</span>
-                </div>
-                <div className="border-t border-[#E0E0E0] pt-1 flex justify-between font-extrabold text-[#2D3436]">
-                  <span>ยอดเงินสุทธิที่จะได้รับ:</span>
-                  <span className="text-emerald-600">{(withdrawCoins / 10 * 0.90).toLocaleString()} บาท</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[#2D3436] font-bold mb-1">เลือกธนาคาร / พร้อมเพย์</label>
-                <select
-                  value={bankName}
-                  onChange={e => setBankName(e.target.value)}
-                  className="w-full p-3 bg-[#F8F9FA] border border-[#E0E0E0] rounded-xl text-xs"
-                >
-                  <option value="ธนาคารกสิกรไทย (KBank)">ธนาคารกสิกรไทย (KBank)</option>
-                  <option value="ธนาคารไทยพาณิชย์ (SCB)">ธนาคารไทยพาณิชย์ (SCB)</option>
-                  <option value="ธนาคารกรุงเทพ (BBL)">ธนาคารกรุงเทพ (BBL)</option>
-                  <option value="ธนาคารกรุงไทย (KTB)">ธนาคารกรุงไทย (KTB)</option>
-                  <option value="พร้อมเพย์ (PromptPay)">พร้อมเพย์ (PromptPay)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[#2D3436] font-bold mb-1">เลขที่บัญชี / เบอร์พร้อมเพย์ *</label>
-                <input
-                  type="text"
-                  required
-                  value={accountNumber}
-                  onChange={e => setAccountNumber(e.target.value)}
-                  className="w-full p-3 bg-[#F8F9FA] border border-[#E0E0E0] rounded-xl text-xs"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[#2D3436] font-bold mb-1">ชื่อบัญชีรับเงิน *</label>
-                <input
-                  type="text"
-                  required
-                  value={accountName}
-                  onChange={e => setAccountName(e.target.value)}
-                  className="w-full p-3 bg-[#F8F9FA] border border-[#E0E0E0] rounded-xl text-xs"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-[#C2E114] hover:bg-[#8A9914] text-[#2D3436] hover:text-white font-extrabold py-3.5 rounded-xl text-xs shadow-xs transition-colors"
-              >
-                ยืนยันการขอถอนเงิน 💸
-              </button>
-            </form>
           </div>
 
-          {/* Right: Payout Request History */}
-          <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-[#E0E0E0] shadow-2xs space-y-4">
-            <h3 className="font-bold text-[#2D3436] text-base">ประวัติการถอนเงินทั้งหมด</h3>
-            <div className="divide-y divide-[#F1F2F6]">
-              {withdrawalsHistory.map(req => (
-                <div key={req.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-[#2D3436]">{req.coinsAmount.toLocaleString()} Coins</span>
-                      <span className="text-xs text-[#636E72]">({req.bankName})</span>
+          {/* Feedback Toast Message */}
+          {bankSuccessMsg && (
+            <div className="p-4 bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-xs animate-in fade-in slide-in-from-top-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>{bankSuccessMsg}</span>
+            </div>
+          )}
+
+          {/* Grid Layout: Left = Bank Account Binding, Right = Transparent Monthly Revenue Breakdown */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Column (5 Cols): Bank Account Binding & Management */}
+            <div className="lg:col-span-5 space-y-6">
+              
+              {/* Linked Bank Card */}
+              <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-soft-card space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-2xl bg-[#2D3436] text-[#C2E114] flex items-center justify-center font-black text-lg shadow-xs">
+                      <Building2 className="w-5 h-5" />
                     </div>
-                    <p className="text-xs text-[#636E72]">
-                      เลขบัญชี: {req.accountNumber} ({req.accountName}) • เมื่อ {req.requestedDate}
+                    <div>
+                      <h3 className="font-black text-sm text-[#2D3436]">บัญชีธนาคารที่ผูกกับระบบ</h3>
+                      <p className="text-[11px] text-gray-500">สำหรับรับเงินโอนอัตโนมัติในวันที่ 1</p>
+                    </div>
+                  </div>
+
+                  {!isEditingBank && (
+                    <button
+                      onClick={() => {
+                        setIsEditingBank(true);
+                        setEditBankName(bankAccount.bankName);
+                        setEditAccountNumber(bankAccount.accountNumber);
+                        setEditAccountName(bankAccount.accountName);
+                        setEditBranchName(bankAccount.branchName || '');
+                      }}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#8A9914] hover:text-[#2D3436] bg-[#EEF8A0] hover:bg-[#D5E871] px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" /> แก้ไขข้อมูล
+                    </button>
+                  )}
+                </div>
+
+                {!isEditingBank ? (
+                  <div className="space-y-4">
+                    {/* Visual Bank Passbook Card */}
+                    <div className="bg-gradient-to-br from-[#1E272C] to-[#2D3436] text-white p-5 rounded-2xl border border-gray-700 shadow-inner relative overflow-hidden space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-extrabold text-[#C2E114] uppercase tracking-wider flex items-center gap-1.5">
+                          <CreditCard className="w-3.5 h-3.5" /> Direct Deposit Account
+                        </span>
+                        <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                          <CheckCircle2 className="w-3 h-3" /> ผูกบัญชีเรียบร้อย
+                        </span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="text-xs text-gray-400 font-medium">ธนาคาร / ช่องทาง</div>
+                        <div className="text-base font-extrabold text-white">{bankAccount.bankName}</div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 pt-1 border-t border-gray-700/60">
+                        <div>
+                          <div className="text-[10px] text-gray-400 font-medium">เลขที่บัญชี / พร้อมเพย์</div>
+                          <div className="text-sm font-mono font-extrabold text-[#C2E114] tracking-wider">
+                            {bankAccount.accountNumber}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-gray-400 font-medium">ชื่อเจ้าของบัญชี</div>
+                          <div className="text-xs font-extrabold text-white truncate">
+                            {bankAccount.accountName}
+                          </div>
+                        </div>
+                      </div>
+
+                      {bankAccount.branchName && (
+                        <div className="text-[10px] text-gray-400">
+                          สาขา: {bankAccount.branchName}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-3.5 bg-[#F8F9FA] rounded-2xl border border-gray-100 space-y-1.5 text-xs text-gray-600">
+                      <div className="flex items-center gap-1.5 font-bold text-[#2D3436]">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        ความปลอดภัยของข้อมูลบัญชี
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-gray-500">
+                        ข้อมูลบัญชีธนาคารของคุณได้รับการเข้ารหัสอย่างปลอดภัย ระบบจะใช้ข้อมูลนี้เพื่อดำเนินการโอนเงินเข้าบัญชีอัตโนมัติในวันที่ 1 ของทุกเดือนเท่านั้น
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  /* Edit Bank Account Form */
+                  <form onSubmit={handleSaveBankAccount} className="space-y-4 text-xs font-medium pt-1">
+                    <div>
+                      <label className="block text-[#2D3436] font-extrabold mb-1">เลือกธนาคาร / บริการพร้อมเพย์ *</label>
+                      <select
+                        value={editBankName}
+                        onChange={e => setEditBankName(e.target.value)}
+                        className="w-full p-3 bg-[#F8F9FA] border border-gray-300 rounded-xl text-xs font-bold text-[#2D3436] focus:outline-hidden focus:ring-2 focus:ring-[#8A9914]"
+                      >
+                        <option value="ธนาคารกสิกรไทย (KBank)">ธนาคารกสิกรไทย (KBank)</option>
+                        <option value="ธนาคารไทยพาณิชย์ (SCB)">ธนาคารไทยพาณิชย์ (SCB)</option>
+                        <option value="ธนาคารกรุงเทพ (BBL)">ธนาคารกรุงเทพ (BBL)</option>
+                        <option value="ธนาคารกรุงไทย (KTB)">ธนาคารกรุงไทย (KTB)</option>
+                        <option value="ธนาคารกรุงศรีอยุธยา (BAY)">ธนาคารกรุงศรีอยุธยา (BAY)</option>
+                        <option value="ธนาคารทหารไทยธนชาต (ttb)">ธนาคารทหารไทยธนชาต (ttb)</option>
+                        <option value="ธนาคารออมสิน (GSB)">ธนาคารออมสิน (GSB)</option>
+                        <option value="ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร (ธ.ก.ส.)">ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร (ธ.ก.ส.)</option>
+                        <option value="ธนาคารยูโอบี (UOB)">ธนาคารยูโอบี (UOB)</option>
+                        <option value="พร้อมเพย์ (PromptPay)">พร้อมเพย์ (PromptPay - เบอร์มือถือ/บัตรประชาชน)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[#2D3436] font-extrabold mb-1">เลขที่บัญชีธนาคาร หรือ หมายเลขพร้อมเพย์ *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="เช่น 123-2-89472-1 หรือ 081-xxx-xxxx"
+                        value={editAccountNumber}
+                        onChange={e => setEditAccountNumber(e.target.value)}
+                        className="w-full p-3 bg-[#F8F9FA] border border-gray-300 rounded-xl text-xs font-mono font-bold text-[#2D3436] focus:outline-hidden focus:ring-2 focus:ring-[#8A9914]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[#2D3436] font-extrabold mb-1">ชื่อ-นามสกุล เจ้าของบัญชี (ตรงกับสมุดบัญชี) *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="เช่น นายสมชาย ใจดี"
+                        value={editAccountName}
+                        onChange={e => setEditAccountName(e.target.value)}
+                        className="w-full p-3 bg-[#F8F9FA] border border-gray-300 rounded-xl text-xs text-[#2D3436] focus:outline-hidden focus:ring-2 focus:ring-[#8A9914]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[#2D3436] font-extrabold mb-1">สาขาธนาคาร (ถ้ามี)</label>
+                      <input
+                        type="text"
+                        placeholder="เช่น สาขาสยามพารากอน (ระบุหรือไม่ระบุก็ได้)"
+                        value={editBranchName}
+                        onChange={e => setEditBranchName(e.target.value)}
+                        className="w-full p-3 bg-[#F8F9FA] border border-gray-300 rounded-xl text-xs text-[#2D3436] focus:outline-hidden focus:ring-2 focus:ring-[#8A9914]"
+                      />
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingBank(false)}
+                        className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                      >
+                        ยกเลิก
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-3 bg-[#2D3436] hover:bg-black text-[#C2E114] font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                      >
+                        <Save className="w-4 h-4" /> บันทึกและผูกบัญชี
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+
+              {/* Payout Policy Explanatory Note */}
+              <div className="bg-amber-50/80 p-5 rounded-3xl border border-amber-200/80 space-y-2 text-xs text-amber-900">
+                <div className="font-black text-amber-950 flex items-center gap-1.5">
+                  <Info className="w-4 h-4 text-amber-700 shrink-0" />
+                  เงื่อนไขและรอบการโอนเงินอัตโนมัติ
+                </div>
+                <ul className="space-y-1.5 list-disc list-inside text-[11px] text-amber-800 leading-relaxed">
+                  <li><strong>ตัดรอบรายได้:</strong> สิ้นสุด ณ เวลา 23:59 น. ของวันสุดท้ายในแต่ละเดือน</li>
+                  <li><strong>โอนเงินอัตโนมัติ:</strong> วันที่ 1 ของเดือนถัดไป (หากตรงกับวันหยุดจะโอนในวันทำการถัดไป)</li>
+                  <li><strong>การคำนวณ:</strong> นำรายได้จากยอดซื้อคอร์ส + ยอดโดเนท มารวมกัน แล้วหักค่าคอมมิชชั่น 4% และค่าบำรุงแพลตฟอร์ม 2% (รวมหัก 6%)</li>
+                </ul>
+              </div>
+
+            </div>
+
+            {/* Right Column (7 Cols): Transparent Revenue Breakdown & Fee Deductions */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Detailed Breakdown Card */}
+              <div className="bg-white p-6 sm:p-7 rounded-3xl border border-gray-200 shadow-soft-card space-y-6">
+                
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-4">
+                  <div>
+                    <h3 className="font-black text-base text-[#2D3436] flex items-center gap-2">
+                      <Receipt className="w-5 h-5 text-[#8A9914]" />
+                      การแจกแจงรายได้ & การหักค่าธรรมเนียม (รอบเดือนปัจจุบัน)
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      แสดงรายการรายได้จากคอร์สเรียน โดเนท และการหักเปอร์เซ็นต์อย่างโปร่งใส
                     </p>
                   </div>
 
-                  <div className="text-right shrink-0">
-                    <div className="font-extrabold text-sm text-emerald-600">+{req.netThb.toLocaleString()} บาท</div>
-                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      req.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                    }`}>
-                      {req.status === 'completed' ? 'โอนเงินสำเร็จ' : 'กำลังดำเนินการโอน'}
-                    </span>
+                  <span className="bg-[#EEF8A0] text-[#2D3436] text-[11px] font-black px-3 py-1 rounded-full shrink-0">
+                    รอบ ส.ค. 2026
+                  </span>
+                </div>
+
+                {/* Section 1: Income Sources */}
+                <div className="space-y-3">
+                  <div className="text-xs font-black uppercase text-gray-500 tracking-wider">
+                    1. รายรับทั้งหมดของครีเอเตอร์ (Gross Revenue Sources)
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Course Revenue Card */}
+                    <div className="p-4 bg-gradient-to-br from-blue-50/70 to-indigo-50/40 rounded-2xl border border-blue-100 space-y-1">
+                      <div className="flex items-center justify-between text-xs font-bold text-blue-900">
+                        <span className="flex items-center gap-1.5">
+                          <BookOpen className="w-4 h-4 text-blue-600" /> ค่าคอร์สเรียนที่นักเรียนซื้อ
+                        </span>
+                        <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold">ยอดขายคอร์ส</span>
+                      </div>
+                      <div className="text-xl font-black text-blue-950">
+                        {courseRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                      </div>
+                      <p className="text-[11px] text-blue-700">จากนักเรียนที่สมัครเรียนในเดือนนี้</p>
+                    </div>
+
+                    {/* Donation Revenue Card */}
+                    <div className="p-4 bg-gradient-to-br from-rose-50/70 to-pink-50/40 rounded-2xl border border-rose-100 space-y-1">
+                      <div className="flex items-center justify-between text-xs font-bold text-rose-900">
+                        <span className="flex items-center gap-1.5">
+                          <Heart className="w-4 h-4 text-rose-600 fill-rose-600" /> ค่าโดเนท / สินน้ำใจ
+                        </span>
+                        <span className="text-[10px] bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full font-bold">ไม่บังคับ</span>
+                      </div>
+                      <div className="text-xl font-black text-rose-950">
+                        {donationRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                      </div>
+                      <p className="text-[11px] text-rose-700">จากนักเรียนส่งเหรียญให้กำลังใจผู้สอน</p>
+                    </div>
+                  </div>
+
+                  {/* Combined Gross Total Box */}
+                  <div className="p-4 bg-[#F8F9FA] rounded-2xl border border-gray-200 flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-black text-[#2D3436]">ยอดรวมรายได้ทั้งหมดก่อนหัก (Total Gross):</span>
+                      <p className="text-[11px] text-gray-500">
+                        ({courseRevenue.toLocaleString()} บาท + {donationRevenue.toLocaleString()} บาท)
+                      </p>
+                    </div>
+                    <div className="text-lg font-black text-[#2D3436]">
+                      {totalGrossRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                    </div>
                   </div>
                 </div>
-              ))}
+
+                {/* Section 2: Deductions Breakdown (4% Commission + 2% Platform Maintenance) */}
+                <div className="space-y-3 pt-2">
+                  <div className="text-xs font-black uppercase text-gray-500 tracking-wider">
+                    2. รายการหักค่าธรรมเนียม & ค่าบำรุงแพลตฟอร์ม (รวมหัก 6%)
+                  </div>
+
+                  <div className="divide-y divide-gray-100 bg-gray-50/80 rounded-2xl border border-gray-200 p-4 space-y-3">
+                    
+                    {/* Item 1: Commission 4% */}
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="space-y-0.5">
+                        <div className="font-extrabold text-xs text-[#2D3436] flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-rose-500" />
+                          ค่าคอมมิชชั่นแพลตฟอร์ม (Platform Commission)
+                          <span className="bg-rose-100 text-rose-800 text-[10px] font-black px-2 py-0.5 rounded-full">
+                            4%
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-500">
+                          คำนวณจากยอดรวม ({totalGrossRevenue.toLocaleString()} × 4%)
+                        </p>
+                      </div>
+                      <div className="text-sm font-bold text-rose-600 text-right">
+                        -{commissionFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                      </div>
+                    </div>
+
+                    {/* Item 2: Platform Maintenance 2% */}
+                    <div className="flex items-center justify-between pt-3">
+                      <div className="space-y-0.5">
+                        <div className="font-extrabold text-xs text-[#2D3436] flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-amber-500" />
+                          ค่าบำรุงและดูแลรักษาแพลตฟอร์ม (Platform Maintenance Fee)
+                          <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-full">
+                            2%
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-500">
+                          คำนวณจากยอดรวม ({totalGrossRevenue.toLocaleString()} × 2%) เพื่อพัฒนาระบบเซิร์ฟเวอร์
+                        </p>
+                      </div>
+                      <div className="text-sm font-bold text-amber-600 text-right">
+                        -{maintenanceFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                      </div>
+                    </div>
+
+                    {/* Total Deductions Combined */}
+                    <div className="flex items-center justify-between pt-3 text-xs font-black text-[#2D3436]">
+                      <span>รวมรายการหักทั้งหมด (4% + 2% = 6%):</span>
+                      <span className="text-rose-600">
+                        -{totalDeductions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                      </span>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Section 3: Net Estimated Auto-Payout on the 1st */}
+                <div className="bg-gradient-to-r from-emerald-500 to-[#2D3436] text-white p-5 rounded-2xl shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wide flex items-center gap-1">
+                      <Check className="w-4 h-4 text-[#C2E114]" /> ยอดสุทธิที่จะโอนเข้าบัญชีอัตโนมัติในวันที่ 1
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black text-[#C2E114]">
+                      {netEstimatedPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                    </div>
+                    <p className="text-[11px] text-gray-300">
+                      คิดเป็น 94% ของรายได้ทั้งหมด โอนเข้า {bankAccount.bankName} ({bankAccount.accountNumber})
+                    </p>
+                  </div>
+
+                  <div className="bg-white/10 backdrop-blur-xs p-3 rounded-xl border border-white/20 text-center sm:text-right shrink-0">
+                    <span className="text-[10px] text-gray-300 block">กำหนดโอนรอบถัดไป</span>
+                    <span className="text-sm font-extrabold text-white">01 กันยายน 2026</span>
+                  </div>
+                </div>
+
+                {/* Interactive Revenue Simulation Tool */}
+                <div className="p-4 bg-[#F8F9FA] rounded-2xl border border-gray-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-black text-[#2D3436]">
+                      <RefreshCw className="w-3.5 h-3.5 text-[#8A9914]" />
+                      เครื่องมือจำลองตัวเลขคำนวณรายได้ (Revenue Calculator)
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCourseRevenue(10000);
+                        setDonationRevenue(150);
+                      }}
+                      className="text-[10px] font-bold text-gray-500 hover:text-black underline cursor-pointer"
+                    >
+                      รีเซ็ตเป็น 10,000 + 150 บ.
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label className="block text-gray-600 font-bold mb-1">ทดลองใส่ยอดขายคอร์ส (บาท):</label>
+                      <input
+                        type="number"
+                        step={100}
+                        min={0}
+                        value={courseRevenue}
+                        onChange={e => setCourseRevenue(Math.max(0, Number(e.target.value)))}
+                        className="w-full p-2.5 bg-white border border-gray-300 rounded-xl font-bold text-[#2D3436]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-600 font-bold mb-1">ทดลองใส่ยอดโดเนท (บาท):</label>
+                      <input
+                        type="number"
+                        step={10}
+                        min={0}
+                        value={donationRevenue}
+                        onChange={e => setDonationRevenue(Math.max(0, Number(e.target.value)))}
+                        className="w-full p-2.5 bg-white border border-gray-300 rounded-xl font-bold text-[#2D3436]"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Historical Monthly Automatic Payouts Table */}
+          <div className="bg-white p-6 sm:p-7 rounded-3xl border border-gray-200 shadow-soft-card space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="font-black text-base text-[#2D3436] flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-[#8A9914]" />
+                  ประวัติรอบการโอนเงินอัตโนมัติย้อนหลัง (Payout History)
+                </h3>
+                <p className="text-xs text-gray-500">
+                  บันทึกประวัติการโอนเงินเข้าบัญชีทุกวันที่ 1 ของแต่ละเดือน พร้อมสลิปและรหัสอ้างอิง
+                </p>
+              </div>
+
+              <span className="text-xs text-gray-500 font-bold">
+                ทั้งหมด {monthlyPayouts.length} รอบเดือน
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-gray-200 text-gray-500 font-extrabold text-[11px] uppercase">
+                    <th className="py-3 px-3">รอบเดือน</th>
+                    <th className="py-3 px-3">วันที่โอน</th>
+                    <th className="py-3 px-3">ยอดคอร์ส</th>
+                    <th className="py-3 px-3">ยอดโดเนท</th>
+                    <th className="py-3 px-3">ยอดรวม</th>
+                    <th className="py-3 px-3 text-rose-600">หักคอมมิชชั่น 4%</th>
+                    <th className="py-3 px-3 text-amber-600">หักบำรุง 2%</th>
+                    <th className="py-3 px-3 text-emerald-700">ยอดสุทธิที่ได้รับ</th>
+                    <th className="py-3 px-3">บัญชีปลายทาง</th>
+                    <th className="py-3 px-3 text-center">สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 font-medium text-gray-700">
+                  {monthlyPayouts.map(p => (
+                    <tr key={p.id} className="hover:bg-gray-50/80 transition-colors">
+                      <td className="py-3.5 px-3 font-bold text-[#2D3436]">
+                        {p.monthPeriod}
+                      </td>
+                      <td className="py-3.5 px-3 text-gray-600 font-mono">
+                        {p.payoutDate}
+                      </td>
+                      <td className="py-3.5 px-3">
+                        {p.courseRevenueThb.toLocaleString()} บ.
+                      </td>
+                      <td className="py-3.5 px-3">
+                        {p.donationRevenueThb.toLocaleString()} บ.
+                      </td>
+                      <td className="py-3.5 px-3 font-bold text-[#2D3436]">
+                        {p.totalGrossThb.toLocaleString()} บ.
+                      </td>
+                      <td className="py-3.5 px-3 text-rose-600 font-semibold">
+                        -{p.commissionFeeThb.toLocaleString()} บ.
+                      </td>
+                      <td className="py-3.5 px-3 text-amber-600 font-semibold">
+                        -{p.platformMaintenanceFeeThb.toLocaleString()} บ.
+                      </td>
+                      <td className="py-3.5 px-3 font-black text-emerald-700 text-sm">
+                        +{p.netPayoutThb.toLocaleString()} บ.
+                      </td>
+                      <td className="py-3.5 px-3 text-[11px] text-gray-600">
+                        {p.bankName.split(' ')[0]} ({p.accountNumber.slice(-5)})
+                      </td>
+                      <td className="py-3.5 px-3 text-center">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black ${
+                          p.status === 'completed'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-amber-100 text-amber-900 animate-pulse'
+                        }`}>
+                          {p.status === 'completed' ? (
+                            <>
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> โอนสำเร็จ
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-3 h-3 text-amber-600" /> รอโอนวันที่ 1
+                            </>
+                          )}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 

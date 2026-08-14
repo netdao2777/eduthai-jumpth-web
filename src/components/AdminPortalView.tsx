@@ -170,7 +170,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({ user }) => {
                 <span className="text-[#636E72]">10 นาทีที่แล้ว</span>
               </div>
               <div className="p-3 bg-[#F8F9FA] rounded-xl flex items-center justify-between">
-                <span>💸 ดร.สมชาย ใจดี ส่งคำขอถอนเงิน 12,000 Coins (1,080 บาท)</span>
+                <span>💸 ดร.สมชาย ใจดี ส่งคำขอถอนเงิน 1,200 Coins (1,080 บาท)</span>
                 <span className="text-[#636E72]">1 ชั่วโมงที่แล้ว</span>
               </div>
               <div className="p-3 bg-[#F8F9FA] rounded-xl flex items-center justify-between">

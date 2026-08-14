@@ -5,12 +5,14 @@ interface HeroLandingProps {
   onStartFree: () => void;
   onExploreCourses: () => void;
   onOpenAbout?: () => void;
+  onOpenDonatePlatform?: () => void;
 }
 
 export const HeroLanding: React.FC<HeroLandingProps> = ({
   onStartFree,
   onExploreCourses,
-  onOpenAbout
+  onOpenAbout,
+  onOpenDonatePlatform
 }) => {
   return (
     <div className="space-y-16 pb-16">
@@ -58,6 +60,14 @@ export const HeroLanding: React.FC<HeroLandingProps> = ({
                 className="w-full sm:w-auto bg-[#C2E114]/20 hover:bg-[#C2E114]/30 text-[#C2E114] font-bold px-6 py-3.5 rounded-xl text-base border border-[#C2E114]/30 transition-all text-center flex items-center justify-center gap-2"
               >
                 ℹ️ เกี่ยวกับเรา (JUMP TH)
+              </button>
+            )}
+            {onOpenDonatePlatform && (
+              <button
+                onClick={onOpenDonatePlatform}
+                className="w-full sm:w-auto bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 hover:text-white font-bold px-6 py-3.5 rounded-xl text-base border border-rose-400/40 transition-all text-center flex items-center justify-center gap-2"
+              >
+                <Heart className="w-4 h-4 fill-rose-400 text-rose-400" /> สนับสนุนแพลตฟอร์ม (ขั้นต่ำ 1 เหรียญ)
               </button>
             )}
           </div>
@@ -181,6 +191,39 @@ export const HeroLanding: React.FC<HeroLandingProps> = ({
               ลงทะเบียนเข้าเรียนฟรี
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* Voluntary Platform Donation Section */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-8">
+        <div className="bg-gradient-to-r from-amber-50 via-lime-50/60 to-emerald-50 p-6 sm:p-8 rounded-3xl border border-lime-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-200 text-rose-500 flex items-center justify-center shrink-0">
+              <Heart className="w-6 h-6 fill-rose-500" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="bg-[#C2E114] text-[#2D3436] text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+                  โครงการเพื่อสังคม (Non-Profit)
+                </span>
+                <span className="text-xs text-gray-500 font-medium">ร่วมสนับสนุนแบบไม่บังคับ</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-[#2D3436]">
+                ร่วมสนับสนุนแพลตฟอร์มการศึกษาฟรี (ขั้นต่ำเพียง 1 เหรียญ)
+              </h3>
+              <p className="text-xs text-gray-600 max-w-xl leading-relaxed">
+                ทุกเหรียญที่คุณมอบให้ช่วยเป็นค่าน้ำมันขับเคลื่อนเซิร์ฟเวอร์ AI Tutor 24 ชม. และผลิตบทเรียนคุณภาพสูงส่งมอบให้นักเรียนในพื้นที่ห่างไกลฟรี 100%
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={onOpenDonatePlatform}
+            className="w-full sm:w-auto bg-[#2D3436] hover:bg-black text-white hover:text-[#C2E114] font-black px-6 py-3.5 rounded-2xl text-xs shadow-md flex items-center justify-center gap-2 transition-all shrink-0 cursor-pointer"
+          >
+            <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+            <span>โดเนทสนับสนุนแพลตฟอร์ม</span>
+          </button>
         </div>
       </section>
 
